@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'widgets/app_above_bar.dart';
+import 'widgets/bottom_navigation_bar.dart';
 
 void main() {
   runApp(YesterPayApp());
@@ -50,22 +52,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'YesterPay',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.yellow[700]),
-            onPressed: () {
-              // 알림 아이콘 클릭 시 이벤트
-            },
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(), // 분리된 상단바 사용
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -111,12 +98,12 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                 leading: Icon(Icons.favorite, color: Colors.pink),
                 title: Row(
                   children: [
-                    Text('심자말 풀이', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('십자말 풀이', style: TextStyle(fontWeight: FontWeight.bold)),
                     Spacer(),
                     Text('완성률 : 55%', style: TextStyle(color: Colors.red)),
                   ],
                 ),
-                subtitle: Text('심자말 완성하러 가기'),
+                subtitle: Text('십자말 완성하러 가기'),
                 trailing: Icon(Icons.arrow_forward_ios),
               ),
               SizedBox(height: 16),
@@ -171,7 +158,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
               SizedBox(height: 16),
               // 시즌 광고 슬라이드
               SizedBox(
-                height: 200,
+                height: 310,
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: 5,
@@ -200,14 +187,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: '심자팔'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: '빙고'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'MY'),
-        ],
-      ),
+      bottomNavigationBar: CustomBottomNavigationBar(), // 분리된 하단바 사용
     );
   }
 }
