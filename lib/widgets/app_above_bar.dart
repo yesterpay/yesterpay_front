@@ -8,7 +8,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         'YesterPay',
         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFCF5FDFF),
       elevation: 0,
       actions: [
         IconButton(

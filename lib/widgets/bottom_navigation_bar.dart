@@ -1,65 +1,91 @@
 import 'package:flutter/material.dart';
+import '../bingo_main.dart';
+import '../main.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
+  final int currentIndex;
+
+  CustomBottomNavigationBar({required this.currentIndex});
+
   @override
   _CustomBottomNavigationBarState createState() => _CustomBottomNavigationBarState();
 }
 
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.currentIndex;
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
+    if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => YesterPayMainContent()),
+      );
+    } else if (index == 3) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => BingoMain()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
-      onTap: (index) {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
+      onTap: _onItemTapped,
       items: [
         BottomNavigationBarItem(
           icon: Image.asset(
             _currentIndex == 0 ? 'assets/icons/yellow_rank.png' : 'assets/icons/gray_rank.png',
-            width: 24,
-            height: 24,
+            width: 40,
+            height: 40,
           ),
-          label: '랭킹',
+          label: '',
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
             _currentIndex == 1 ? 'assets/icons/yellow_crossword.png' : 'assets/icons/gray_crossword.png',
-            width: 24,
-            height: 24,
+            width: 40,
+            height: 40,
           ),
-          label: '십자말',
+          label: '',
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
             _currentIndex == 2 ? 'assets/icons/yellow_home.png' : 'assets/icons/gray_home.png',
-            width: 24,
-            height: 24,
+            width: 40,
+            height: 40,
           ),
-          label: '홈',
+          label: '',
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
             _currentIndex == 3 ? 'assets/icons/yellow_bingo.png' : 'assets/icons/gray_bingo.png',
-            width: 24,
-            height: 24,
+            width: 40,
+            height: 40,
           ),
-          label: '빙고',
+          label: '',
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
             _currentIndex == 4 ? 'assets/icons/yellow_mypage.png' : 'assets/icons/gray_mypage.png',
-            width: 24,
-            height: 24,
+            width: 40,
+            height: 40,
           ),
-          label: 'MY',
+          label: '',
         ),
       ],
-      type: BottomNavigationBarType.fixed, // 아이템이 4개 이상일 때 타입을 fixed로 설정
+      type: BottomNavigationBarType.fixed,
     );
   }
 }
