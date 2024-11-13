@@ -1,6 +1,6 @@
-# YesterPay (KB 해커톤 - BackEnd)
+# YesterPay (KB 해커톤 - FrontEnd)
 
-- YesterPay의 BackEnd 코드입니다.
+- YesterPay의 FrontEnd 코드입니다.
 
 
 # 0️⃣ 진행 방식
