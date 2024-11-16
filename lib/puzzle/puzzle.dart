@@ -5,6 +5,9 @@ import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dar
 import 'package:practice_first_flutter_project/puzzle/proposal_word.dart';
 import 'package:practice_first_flutter_project/puzzle/team_info.dart';
 
+import '../main.dart';
+import '../widgets/app_above_bar.dart';
+
 class CrosswordPage extends StatefulWidget {
   const CrosswordPage({super.key});
 
@@ -184,8 +187,10 @@ class _CrosswordPageState extends State<CrosswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
-      resizeToAvoidBottomInset: true,
+      appBar: CustomAppBar(
+        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
+      ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
