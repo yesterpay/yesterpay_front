@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
+import 'hiddenword/hiddenword_prediction.dart';
+import 'hiddenword/hiddenword_open.dart';
+
 
 void main() {
   runApp(YesterPayApp());
@@ -79,7 +82,12 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         padding: EdgeInsets.zero,
                       ),
                       onPressed: () {
-                        // 글자 확인 페이지로 이동
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HiddenWordOpenPage(hiddenWord: '차'),
+                          ),
+                        );
                       },
                       child: Text('글자 확인하러 가기  ➔', style: TextStyle(fontSize: 12, color: Colors.black)),
                     ),
@@ -149,7 +157,12 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         padding: EdgeInsets.zero,
                       ),
                       onPressed: () {
-                        // 글자 확인 페이지로 이동
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HiddenWordPredictionPage(),
+                          ),
+                        );
                       },
                       child: Text('글자 예측하러 가기  ➜', style: TextStyle(fontSize: 12, color: Colors.black)),
                     ),

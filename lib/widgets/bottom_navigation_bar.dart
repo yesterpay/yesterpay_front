@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:practice_first_flutter_project/mypage/mypage.dart';
 import '../bingo_main.dart';
 import '../main.dart';
 
@@ -34,6 +35,11 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => BingoMain()),
+      );
+    }else if (index == 4) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyPage()),
       );
     }
   }
