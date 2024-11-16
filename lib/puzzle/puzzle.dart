@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
 import 'package:practice_first_flutter_project/puzzle/proposal_word.dart';
 import 'package:practice_first_flutter_project/puzzle/team_info.dart';
@@ -72,73 +73,97 @@ class _CrosswordPageState extends State<CrosswordPage> {
 
   void _showLetterInputDialog(
       BuildContext context, Map<String, dynamic> wordData) {
-    TextEditingController letterController = TextEditingController();
+    final TextEditingController letterController = TextEditingController();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // 키보드 공간 확보를 위한 설정
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            "${wordData['orientation'] == 'r' ? '가로' : '세로'} ${wordData['no']}",
-            style: TextStyle(
-                color: wordData['orientation'] == 'r'
-                    ? Colors.lightBlue
-                    : Colors.purple),
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom, // 키보드 높이만큼 여백 추가
           ),
-          content: TextField(
-            controller: letterController,
-            decoration: InputDecoration(hintText: "단어를 입력하세요"),
-          ),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          child: SingleChildScrollView(
+            // 내용이 많을 때 스크롤 가능
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 100,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      backgroundColor: cancelBtnColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      "취소",
-                      style: TextStyle(color: Colors.white),
+                Text(
+                  "${wordData['orientation'] == 'r' ? '가로' : '세로'} ${wordData['no']}번",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: wordData['orientation'] == 'r'
+                        ? Colors.lightBlue
+                        : Colors.purple,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: letterController,
+                  autofocus: true,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    hintText: "단어를 입력하세요",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: 10,
-                ),
-                SizedBox(
-                  width: 100,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      if (letterController.text == wordData['word']) {
-                        setState(() {
-                          _fillGridWithWord(wordData);
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("정답이 아닙니다.")),
-                        );
-                      }
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: emissionBtnColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cancelBtnColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        "취소",
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    child: Text("제안"),
-                  ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        if (letterController.text == wordData['word']) {
+                          setState(() {
+                            _fillGridWithWord(wordData);
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("정답이 아닙니다.")),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: emissionBtnColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        "확인",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -159,9 +184,8 @@ class _CrosswordPageState extends State<CrosswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("십자말 풀이"),
-      ),
+      appBar: CustomAppBar(),
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -171,12 +195,12 @@ class _CrosswordPageState extends State<CrosswordPage> {
                 // 십자말 풀이 타이틀
                 Positioned(
                   top: 25,
-                  left: MediaQuery.of(context).size.width * 0.13,
+                  left: MediaQuery.of(context).size.width * 0.08,
                   child: Transform.scale(
-                    scale: 1.2,
+                    scale: 1.7,
                     child: Image.asset(
-                      'assets/images/puzzleTitle.jpg',
-                      width: MediaQuery.of(context).size.width * 0.3,
+                      'assets/images/puzzleTitle.png',
+                      width: MediaQuery.of(context).size.width * 0.35,
                     ),
                   ),
                 ),
@@ -186,7 +210,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
                   padding: const EdgeInsets.only(top: 150.0),
                   child: Center(
                     child: Container(
-                      width: MediaQuery.of(context).size.width * 0.8,
+                      width: MediaQuery.of(context).size.width * 0.9,
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Color(0xFFDCC58C),
@@ -244,7 +268,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
                                   color: isCorrect
                                       ? const Color.fromARGB(255, 1, 170, 7)
                                       : Colors.transparent, // 정답이면 초록색 테두리
-                                  width: 4,
+                                  width: 2,
                                 ),
                               ),
                               child: Stack(
@@ -281,10 +305,10 @@ class _CrosswordPageState extends State<CrosswordPage> {
                   ),
                 ),
                 Positioned(
-                  top: -13, // 위쪽 여백을 조정
-                  right: 0,
+                  top: 8, // 위쪽 여백을 조정
+                  right: -5,
                   child: Transform.scale(
-                    scale: 1.15,
+                    scale: 1.1,
                     child: Image.asset(
                       'assets/images/friends.png',
                       width: MediaQuery.of(context).size.width * 0.7,
@@ -299,7 +323,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.37,
+                  width: MediaQuery.of(context).size.width * 0.42,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -329,7 +353,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
                   width: MediaQuery.of(context).size.width * 0.05,
                 ),
                 SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.37,
+                  width: MediaQuery.of(context).size.width * 0.42,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -362,7 +386,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
+                width: MediaQuery.of(context).size.width * 0.9,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -410,7 +434,9 @@ class _CrosswordPageState extends State<CrosswordPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 1,), // 메인 하단바와 동일하게 유지
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: 1,
+      ), // 메인 하단바와 동일하게 유지
     );
   }
 }
