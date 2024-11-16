@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+// import '/widgets/app_above_bar.dart';
+import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
+import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
+
 class TeamMember {
   final String name;
   final String role;
@@ -206,6 +210,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppBar(),
       body: FutureBuilder<List<TeamMember>>(
         future: futureTeamMembers,
         builder: (context, snapshot) {
@@ -374,6 +379,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           }
         },
       ),
+      bottomNavigationBar: CustomBottomNavigationBar(), // 메인 하단바와 동일하게 유지
     );
   }
 }
