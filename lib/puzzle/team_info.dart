@@ -379,7 +379,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           }
         },
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(), // 메인 하단바와 동일하게 유지
+      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 1,), // 메인 하단바와 동일하게 유지
     );
   }
 }

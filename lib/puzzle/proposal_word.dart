@@ -297,7 +297,7 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(),
+      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 1,),
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/mypage/mypage.dart';
 import '../bingo_main.dart';
 import '../main.dart';
+import '../puzzle/puzzle.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final int currentIndex;
@@ -26,7 +27,13 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       _currentIndex = index;
     });
 
-    if (index == 2) {
+    if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => CrosswordPage()),
+      );
+    }
+    else if (index == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => YesterPayMainContent()),

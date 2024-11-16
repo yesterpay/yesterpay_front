@@ -321,7 +321,7 @@ class _TeamRecruitmentPageState extends State<TeamRecruitmentPage> {
           }),
         ],
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(),
+      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 1,),
     );
   }
 }
