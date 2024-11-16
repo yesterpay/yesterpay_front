@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart'; // CustomAppBar가 정의된 파일
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart'; // CustomBottomNavigationBar가 정의된 파일
-import 'package:practice_first_flutter_project/bingo_main.dart'; // bingo_main.dart 파일을 불러옴
+import 'package:practice_first_flutter_project/bingo_main.dart';
+
+import '../main.dart'; // bingo_main.dart 파일을 불러옴
 
 class MyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(
+        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
+      ),
       backgroundColor: Color(0xFFF8F6F2),
       body: SingleChildScrollView(
         child: Padding(

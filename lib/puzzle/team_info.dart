@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
 
+import '../main.dart';
+
 class TeamMember {
   final String name;
   final String role;
@@ -210,7 +212,9 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(
+        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
+      ),
       body: FutureBuilder<List<TeamMember>>(
         future: futureTeamMembers,
         builder: (context, snapshot) {

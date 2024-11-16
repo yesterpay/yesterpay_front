@@ -8,6 +8,43 @@ import 'widgets/bottom_navigation_bar.dart';
 import 'hiddenword/hiddenword_prediction.dart';
 import 'hiddenword/hiddenword_open.dart';
 
+List<Map<String, dynamic>> notifications = [
+  {
+    'id': 1,
+    'date': '24.10.31',
+    'category': '가입',
+    'title': '정인겸님이 가입신청하였습니다.',
+    'actions': [
+      {'label': '수락', 'onPressed': () {}},
+      {'label': '거절', 'onPressed': () {}}
+    ],
+  },
+  {
+    'id': 2,
+    'date': '24.10.30',
+    'category': '이벤트/혜택',
+    'title': '[광고] [히든 글자 확인하러 가기]\n어제 KB Pay로 결제하셨네요!\n히든 글자를 확인해보세요.',
+    'actions': [
+      {
+        'label': '자세히 보기',
+        'onPressed': (BuildContext context) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HiddenWordOpenPage(hiddenWord: '차'),
+            ),
+          );
+        }
+      }
+    ],
+  },
+  {
+    'id': 3,
+    'date': '24.10.28',
+    'category': '결제',
+    'title': '[KB Pay 사용 알림] 체크 7306\n4,500원\n스타벅스 광화문점 승인',
+  },
+];
 
 void main() {
   runApp(YesterPayApp());
@@ -58,7 +95,10 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(
+        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
+      ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
