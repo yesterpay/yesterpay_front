@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // import '/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
+import 'team_list.dart';
 
 class TeamMember {
   final String name;
@@ -50,7 +51,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   // 서버에서 팀원 정보를 가져오는 함수 (예제용 비동기 함수)
   Future<List<TeamMember>> fetchTeamMembers() async {
     await Future.delayed(
-        Duration(seconds: 2)); // 데이터를 가져오는 데 시간이 걸리는 것처럼 딜레이 추가
+        Duration(seconds: 1)); // 데이터를 가져오는 데 시간이 걸리는 것처럼 딜레이 추가
     // 이 부분을 실제 API 요청으로 대체해야 합니다.
     return [
       TeamMember(
@@ -137,6 +138,24 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
     );
   }
 
+  void _performExit() async {
+    // 탈퇴 처리 로직 (예시)
+    await Future.delayed(Duration(seconds: 1)); // 비동기 작업 시뮬레이션
+
+    if (mounted) {
+      // 화면 전환
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => TeamRecruitmentPage()),
+      ).then((_) {
+        // 화면 전환 후 스낵바 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('팀에서 탈퇴되었습니다.')),
+        );
+      });
+    }
+  }
+
   void _showExitDialog() {
     showDialog(
       context: context,
@@ -186,8 +205,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                       style: TextStyle(color: Colors.black),
                     ),
                     onPressed: () {
-                      // 탈퇴 로직 실행
-                      Navigator.of(context).pop(); // 모달 창 닫기
+                      Navigator.of(context).pop(); // 모달 닫기
                       _performExit(); // 탈퇴 실행 메서드 호출
                     },
                   ),
@@ -197,13 +215,6 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           ],
         );
       },
-    );
-  }
-
-  void _performExit() {
-    // 실제 탈퇴 처리 로직 작성
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('팀에서 탈퇴되었습니다.')),
     );
   }
 
@@ -356,6 +367,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
+                      // Navigator.of(context).pop();
                       _showExitDialog();
                     },
                     style: ElevatedButton.styleFrom(
@@ -379,7 +391,9 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           }
         },
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 1,), // 메인 하단바와 동일하게 유지
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: 1,
+      ), // 메인 하단바와 동일하게 유지
     );
   }
 }
