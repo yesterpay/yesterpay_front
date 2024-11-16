@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart'; // CustomAppBar가 정의된 파일
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart'; // CustomBottomNavigationBar가 정의된 파일
 import 'package:practice_first_flutter_project/bingo_main.dart';
-
+import 'package:practice_first_flutter_project/combination_words.dart'; // CombinationWordsPage 파일을 불러옴
 import '../main.dart'; // bingo_main.dart 파일을 불러옴
+
 
 class MyPage extends StatelessWidget {
   @override
@@ -49,14 +50,14 @@ class MyPage extends StatelessWidget {
               SizedBox(height: 20),
               _buildWordRow(['인', '킹', '도', '주', '하', '올']),
               SizedBox(height: 20),
-              _buildOptionsBox(), // 단어 조합하기와 프로필 수정을 포함한 박스
+              _buildOptionsBox(context), // 단어 조합하기와 프로필 수정을 포함한 박스
               SizedBox(height: 30),
               _buildBingoSection(context), // 수정된 빙고 섹션
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 4), // 여기로 이동
+      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 4), // 하단 네비게이션 바
     );
   }
 
@@ -110,7 +111,6 @@ class MyPage extends StatelessWidget {
     );
   }
 
-
   Widget _buildWordRow(List<String> words) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -150,7 +150,7 @@ class MyPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOptionsBox() {
+  Widget _buildOptionsBox(BuildContext context) { // context를 전달받음
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -179,6 +179,12 @@ class MyPage extends StatelessWidget {
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // 단어 조합하기 페이지로 이동
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CombinationWordsPage(),
+                ),
+              );
             },
           ),
           Container(
