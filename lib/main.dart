@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'combination_words.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'hiddenword/hiddenword_prediction.dart';
@@ -189,6 +190,10 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         TextButton(
                           onPressed: () {
                             // 조합하기 페이지로 이동
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => CombinationWordsPage()),
+                            );
                           },
                           child: Text('조합하기 >'),
                         ),
