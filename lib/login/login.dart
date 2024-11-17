@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: LoginScreen(),
     );
   }
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final GlobalProvider pro = Get.put(GlobalProvider()); // 인스턴스 등록
         pro.setMemberId(memberId);
         print('GlobalProvider Member ID: ${pro.getMemberId()}'); // 값 확인
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => YesterPayMainContent(),
