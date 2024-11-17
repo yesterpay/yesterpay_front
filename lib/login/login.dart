@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:get/get.dart';
 
 import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/main.dart';
@@ -45,13 +46,20 @@ class _LoginScreenState extends State<LoginScreen> {
         body: jsonEncode({'id': id, 'pw': pw}),
       );
 
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
         // Spring에서 반환된 memberId
-        final memberId = jsonDecode(response.body);
+        final memberId = int.tryParse(response.body) ?? 0; // memberId로 파싱
+        print('Parsed Member ID: $memberId');
+        final GlobalProvider pro = Get.put(GlobalProvider()); // 인스턴스 등록
+        pro.setMemberId(memberId);
+        print('GlobalProvider Member ID: ${pro.getMemberId()}'); // 값 확인
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => YesterPayMainContent(memberId: memberId),
+            builder: (context) => YesterPayMainContent(),
           ),
         );
       } else {
