@@ -126,11 +126,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           // 예시 아이디, 비밀번호 설정
                           if (email == "yesterpay@gmail.com" &&
                               password == "yes123!!!") {
-                            Navigator.push(
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => YesterPayMainContent(),
                               ),
+
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
