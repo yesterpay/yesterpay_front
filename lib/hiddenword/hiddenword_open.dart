@@ -121,16 +121,8 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
             Navigator.pop(context);
           },
         ),
-        title: Text('YesterPay', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('히든글자 공개', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              // 알림 페이지로 이동 (필요시 구현)
-            },
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(0),
@@ -215,30 +207,30 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
               ),
             ),
             SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(left: 15.0), // 현재 보유 글자 앞에 여백 추가
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '현재 보유 글자',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          for (var letter in ownedLetters)
-                            CircleAvatar(
+            Center(
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(10),
+                margin: EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, // 텍스트를 왼쪽 정렬
+                  children: [
+                    Text(
+                      '현재 보유 글자',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start, // 글자 아이템을 왼쪽 정렬
+                      children: [
+                        for (var letter in ownedLetters)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 9.0), // 글자 간격 설정
+                            child: CircleAvatar(
                               radius: 25,
                               backgroundColor: Colors.amber[100],
                               child: Text(
@@ -246,10 +238,10 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
                                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                             ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
