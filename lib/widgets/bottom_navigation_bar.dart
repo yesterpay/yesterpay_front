@@ -8,10 +8,12 @@ import 'package:practice_first_flutter_project/ranking/ranking.dart';
 class CustomBottomNavigationBar extends StatefulWidget {
   final int currentIndex;
 
-  CustomBottomNavigationBar({required this.currentIndex});
+  CustomBottomNavigationBar(
+      {super.key, required this.currentIndex});
 
   @override
-  _CustomBottomNavigationBarState createState() => _CustomBottomNavigationBarState();
+  _CustomBottomNavigationBarState createState() =>
+      _CustomBottomNavigationBarState();
 }
 
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
@@ -33,13 +35,12 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         context,
         MaterialPageRoute(builder: (context) => WeeklyRankingPage()),
       );
-    }else if (index == 1) {
+    } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => CrosswordPage()),
       );
-    }
-    else if (index == 2) {
+    } else if (index == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => YesterPayMainContent()),
@@ -49,7 +50,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         context,
         MaterialPageRoute(builder: (context) => BingoMain()),
       );
-    }else if (index == 4) {
+    } else if (index == 4) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MyPage()),
@@ -65,7 +66,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       items: [
         BottomNavigationBarItem(
           icon: Image.asset(
-            _currentIndex == 0 ? 'assets/icons/yellow_rank.png' : 'assets/icons/gray_rank.png',
+            _currentIndex == 0
+                ? 'assets/icons/yellow_rank.png'
+                : 'assets/icons/gray_rank.png',
             width: 40,
             height: 40,
           ),
@@ -73,7 +76,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
-            _currentIndex == 1 ? 'assets/icons/yellow_crossword.png' : 'assets/icons/gray_crossword.png',
+            _currentIndex == 1
+                ? 'assets/icons/yellow_crossword.png'
+                : 'assets/icons/gray_crossword.png',
             width: 40,
             height: 40,
           ),
@@ -81,7 +86,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
-            _currentIndex == 2 ? 'assets/icons/yellow_home.png' : 'assets/icons/gray_home.png',
+            _currentIndex == 2
+                ? 'assets/icons/yellow_home.png'
+                : 'assets/icons/gray_home.png',
             width: 40,
             height: 40,
           ),
@@ -89,7 +96,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
-            _currentIndex == 3 ? 'assets/icons/yellow_bingo.png' : 'assets/icons/gray_bingo.png',
+            _currentIndex == 3
+                ? 'assets/icons/yellow_bingo.png'
+                : 'assets/icons/gray_bingo.png',
             width: 40,
             height: 40,
           ),
@@ -97,7 +106,9 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         ),
         BottomNavigationBarItem(
           icon: Image.asset(
-            _currentIndex == 4 ? 'assets/icons/yellow_mypage.png' : 'assets/icons/gray_mypage.png',
+            _currentIndex == 4
+                ? 'assets/icons/yellow_mypage.png'
+                : 'assets/icons/gray_mypage.png',
             width: 40,
             height: 40,
           ),
