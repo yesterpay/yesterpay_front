@@ -10,11 +10,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      scrolledUnderElevation:0,
       title: Image.asset(
         'assets/icons/YesterPay.png', // YesterPay 로고 이미지
         height: 20, // 이미지 높이 조정
       ),
-      backgroundColor: Color(0xFFFCF5FDFF),
+      backgroundColor: Colors.white,
       elevation: 0,
       actions: [
         IconButton(
