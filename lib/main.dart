@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/puzzle/puzzle.dart';
+import 'package:practice_first_flutter_project/login/login.dart';
 import 'bingo_main.dart';
 import 'combination_words.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'hiddenword/hiddenword_prediction.dart';
 import 'hiddenword/hiddenword_open.dart';
+import 'package:http/http.dart' as http;
 
 List<Map<String, dynamic>> notifications = [
   {
@@ -51,16 +53,22 @@ void main() {
 }
 
 class YesterPayApp extends StatelessWidget {
+  const YesterPayApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: YesterPayMainContent(),
+      home: LoginScreen(),
     );
   }
 }
 
 class YesterPayMainContent extends StatefulWidget {
+  final int memberId;
+
+  const YesterPayMainContent({super.key, required this.memberId});
+
   @override
   _YesterPayMainContentState createState() => _YesterPayMainContentState();
 }
@@ -106,6 +114,9 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                'YesterPay 메인 화면 - 회원 ID: ${widget.memberId}',
+              ),
               Stack(
                 children: [
                   ClipRRect(
@@ -128,11 +139,16 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HiddenWordOpenPage(hiddenWord: '차'),
+                            builder: (context) =>
+                                HiddenWordOpenPage(hiddenWord: '차'),
                           ),
                         );
                       },
-                      child: Text('글자 확인하러 가기  ➔', style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold)),
+                      child: Text('글자 확인하러 가기  ➔',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -150,8 +166,9 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     height: 24,
                   ),
                   title: Row(
-                    children: [
-                      Text('PAYGO! BINGO!', style: TextStyle(fontWeight: FontWeight.bold)),
+                    children: const [
+                      Text('PAYGO! BINGO!',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       Spacer(),
                       Text('1빙고 / 3빙고', style: TextStyle(color: Colors.red)),
                     ],
@@ -185,8 +202,9 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     height: 24,
                   ),
                   title: Row(
-                    children: [
-                      Text('십자말 풀이', style: TextStyle(fontWeight: FontWeight.bold)),
+                    children: const [
+                      Text('십자말 풀이',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       Spacer(),
                       Text('완성률 : 55%', style: TextStyle(color: Colors.red)),
                     ],
@@ -200,15 +218,14 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         // CrosswordPage 페이지로 이동
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => CrosswordPage()),
+                          MaterialPageRoute(
+                              builder: (context) => CrosswordPage()),
                         );
                       },
                     ),
                   ),
                 ),
               ),
-
-
 
               SizedBox(height: 16),
               Stack(
@@ -237,7 +254,11 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                           ),
                         );
                       },
-                      child: Text('글자 예측하러 가기  ➜', style: TextStyle(fontSize: 16, color: Colors.black,fontWeight: FontWeight.bold)),
+                      child: Text('글자 예측하러 가기  ➜',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -257,14 +278,16 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                       children: [
                         Text(
                           '내 단어',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         TextButton(
                           onPressed: () {
                             // 조합하기 페이지로 이동
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => CombinationWordsPage()),
+                              MaterialPageRoute(
+                                  builder: (context) => CombinationWordsPage()),
                             );
                           },
                           child: Text('조합하기 >'),
