@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:practice_first_flutter_project/main.dart';
 
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
@@ -108,7 +109,9 @@ class _TeamRecruitmentPageState extends State<TeamRecruitmentPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar(
+        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
