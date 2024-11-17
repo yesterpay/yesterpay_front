@@ -1,11 +1,17 @@
+import 'dart:convert';
+import 'package:get/get.dart';
+
 import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/main.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,6 +22,8 @@ class MyApp extends StatelessWidget {
 }
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -25,6 +33,47 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isObscure = true;
+
+  Future<void> _login() async {
+    final String id = emailController.text;
+    final String pw = passwordController.text;
+    const String serverUrl = 'http://10.0.2.2:8081/member/login';
+    final url = Uri.parse(serverUrl);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'id': id, 'pw': pw}),
+      );
+
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Spring에서 반환된 memberId
+        final memberId = int.tryParse(response.body) ?? 0; // memberId로 파싱
+        print('Parsed Member ID: $memberId');
+        final GlobalProvider pro = Get.put(GlobalProvider()); // 인스턴스 등록
+        pro.setMemberId(memberId);
+        print('GlobalProvider Member ID: ${pro.getMemberId()}'); // 값 확인
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => YesterPayMainContent(),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 실패: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('서버와의 연결에 실패했습니다.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,33 +164,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          String email = emailController.text;
-                          String password = passwordController.text;
-
-                          // 예시 아이디, 비밀번호 설정
-                          if (email == "yesterpay@gmail.com" &&
-                              password == "yes123!!!") {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => YesterPayMainContent(),
-                              ),
-
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('아이디 또는 비밀번호가 잘못되었습니다.'),
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _login,
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'dart:math';
 import 'main.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
 
 class BingoMain extends StatefulWidget {
+  const BingoMain({super.key});
+
   @override
   _BingoMainState createState() => _BingoMainState();
 }
@@ -35,8 +38,9 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
     Alignment.topRight,
   ];
 
-  Map<int, AnimationController> _controllers = {}; // 각 M 칸에 대한 AnimationController
-  Map<int, Animation<double>> _flipAnimations = {}; // 각 M 칸에 대한 Animation
+  final Map<int, AnimationController> _controllers =
+      {}; // 각 M 칸에 대한 AnimationController
+  final Map<int, Animation<double>> _flipAnimations = {}; // 각 M 칸에 대한 Animation
   List<bool> isFlipped = List.generate(9, (_) => false); // 각 칸의 뒤집힘 상태를 저장
 
   @override
@@ -45,7 +49,8 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
     // 각 M 칸에 대해서만 애니메이션 컨트롤러와 애니메이션 초기화
     for (int i = 0; i < bingoItems.length; i++) {
       if (bingoItems[i] == 'M') {
-        final controller = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+        final controller = AnimationController(
+            vsync: this, duration: Duration(milliseconds: 500));
         final animation = Tween(begin: 0.0, end: pi).animate(controller);
         _controllers[i] = controller;
         _flipAnimations[i] = animation;
@@ -69,7 +74,8 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -120,7 +126,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
     });
     _controllers[index]?.forward(from: 0.0).then((_) {
       // 애니메이션이 완료된 후 위치를 로그로 출력
-      print("Bingo판에서  ${index+1}번째 빙고판이 뒤집혔습니다.");
+      print("Bingo판에서  ${index + 1}번째 빙고판이 뒤집혔습니다.");
     });
   }
 
@@ -177,50 +183,52 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
             alignment: Alignment.center,
             child: showFront
                 ? Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Text(
-                    bingoItems[index],
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: bingoItems[index] == 'M' ? Colors.orange : Colors.black,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  if (images[index] != null)
-                    Align(
-                      alignment: imageAlignments[index],
+                    alignment: Alignment.center,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Text(
+                          bingoItems[index],
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: bingoItems[index] == 'M'
+                                ? Colors.orange
+                                : Colors.black,
+                          ),
+                        ),
+                        if (images[index] != null)
+                          Align(
+                            alignment: imageAlignments[index],
+                            child: Image.asset(
+                              images[index]!,
+                              width: 60,
+                              height: 60,
+                            ),
+                          ),
+                      ],
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: Colors.orangeAccent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
-                        images[index]!,
-                        width: 60,
-                        height: 60,
+                        'assets/images/complete_bingo.png',
+                        fit: BoxFit.cover, // 박스에 이미지를 꽉 차게 설정
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
                     ),
-                ],
-              ),
-            )
-                : Container(
-              decoration: BoxDecoration(
-                color: Colors.orangeAccent,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'assets/images/complete_bingo.png',
-                  fit: BoxFit.cover, // 박스에 이미지를 꽉 차게 설정
-                  width: double.infinity,
-                  height: double.infinity,
-                ),
-              ),
-            ),
+                  ),
           );
         },
       ),
@@ -229,6 +237,8 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final GlobalProvider pro = Get.find<GlobalProvider>();
+
     return Scaffold(
       appBar: CustomAppBar(
         hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
@@ -240,6 +250,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Obx(() => Text('Member ID: ${pro.getMemberId()}')),
               Center(
                 child: Container(
                   width: double.infinity,
@@ -285,8 +296,8 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
               SizedBox(height: 8),
               Text(
                 '\t • 최대 3개의 빙고까지만 완성할 수 있으며, 3개의 빙고를 모두 완성하면 새로운 빙고판이 제공됩니다.\n'
-                    '\t • "M" 칸은 미션 칸으로, 미션 성공시 해당 칸을 채울 수 있습니다.\n'
-                    '\t • 빙고는 글자 획득 시 자동으로 해당 칸을 채울 수 있습니다.',
+                '\t • "M" 칸은 미션 칸으로, 미션 성공시 해당 칸을 채울 수 있습니다.\n'
+                '\t • 빙고는 글자 획득 시 자동으로 해당 칸을 채울 수 있습니다.',
               ),
             ],
           ),
