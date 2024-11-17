@@ -114,9 +114,6 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'YesterPay 메인 화면 - 회원 ID: ${widget.memberId}',
-              ),
               Stack(
                 children: [
                   ClipRRect(
