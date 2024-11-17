@@ -3,6 +3,7 @@ import 'package:practice_first_flutter_project/mypage/mypage.dart';
 import '../bingo_main.dart';
 import '../main.dart';
 import '../puzzle/puzzle.dart';
+import 'package:practice_first_flutter_project/ranking/ranking.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final int currentIndex;
@@ -27,7 +28,12 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       _currentIndex = index;
     });
 
-    if (index == 1) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => WeeklyRankingPage()),
+      );
+    }else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => CrosswordPage()),
