@@ -1,12 +1,144 @@
 import 'package:flutter/material.dart';
-import 'package:practice_first_flutter_project/widgets/app_above_bar.dart'; // CustomAppBar가 정의된 파일
+import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart'; // CustomBottomNavigationBar가 정의된 파일
 import 'package:practice_first_flutter_project/bingo_main.dart';
 import 'package:practice_first_flutter_project/combination_words.dart'; // CombinationWordsPage 파일을 불러옴
 import '../main.dart'; // bingo_main.dart 파일을 불러옴
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class MyPage extends StatefulWidget {
+  @override
+  _MyPageState createState() => _MyPageState();
+}
+
+class _MyPageState extends State<MyPage> {
+  String nickName = '로딩 중...';
+  String point = '로딩 중...';
+  String bingoLevel = '로딩 중...';
+  String combiCount = '로딩 중...';
+  String title = '로딩 중...';
+  String requiredBingoCount = '로딩 중...';
+  List<String> letters = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMemberData();
+    fetchLetters();
+    fetchBingoLevel();
+    fetchRequiredBingoCount();
+  }
+
+  Future<void> fetchMemberData() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.39.224.114:8080/member/1'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+        print('Response Data: $data');
+
+        setState(() {
+          nickName = data['nickName'] ?? '닉네임 없음';
+          point = data['point']?.toString() ?? '0';
+          combiCount = data['combiCount']?.toString() ?? '0';
+          title = data['title']?.toString() ?? '0';
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          nickName = '닉네임 불러오기 실패';
+          point = '0';
+          combiCount = '0';
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        nickName = '예외 발생';
+        point = '0';
+        combiCount = '0';
+      });
+    }
+  }
+
+  Future<void> fetchLetters() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.39.224.114:8080/member/1/letter'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody) as List;
+        print('Letters Response Data: $data');
+
+        setState(() {
+          // API 응답 데이터를 리스트로 저장
+          letters = data.map((item) => item.toString()).toList();
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          letters = [];
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        letters = [];
+      });
+    }
+  }
+
+  Future<void> fetchBingoLevel() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.39.224.114:8080/bingo/board?memberId=1'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+        print('Bingo Level Response Data: $data');
+
+        setState(() {
+          bingoLevel = data['level']?.toString() ?? '0'; // 빙고 레벨 값 저장
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          bingoLevel = '0';
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        bingoLevel = '0';
+      });
+    }
+  }
+
+  Future<void> fetchRequiredBingoCount() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.39.224.114:8080/bingo/status?memberId=1'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+        print('Required Bingo Count Response Data: $data');
+
+        setState(() {
+          requiredBingoCount = data['requiredBingoCount']?.toString() ?? '0'; // 남은 빙고 수 값 저장
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          requiredBingoCount = '0';
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        requiredBingoCount = '0';
+      });
+    }
+  }
 
 
-class MyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +163,7 @@ class MyPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '호랑깍두기',
+                    nickName, // API에서 가져온 nick_name 표시
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -40,19 +172,19 @@ class MyPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Expanded(child: _buildStatBox('100,000', '포인트리')),
+                  Expanded(child: _buildStatBox(point, '포인트리')), // 포인트리 값
                   SizedBox(width: 10),
-                  Expanded(child: _buildStatBox('3', '빙고 level')),
+                  Expanded(child: _buildStatBox(bingoLevel, '빙고 level')), // 빙고 레벨 값
                   SizedBox(width: 10),
-                  Expanded(child: _buildStatBoxWithImage('assets/images/newbie.png', '뉴비')),
+                  Expanded(child: _buildStatBoxWithImage('assets/images/newbie.png', title)),
                 ],
               ),
               SizedBox(height: 20),
-              _buildWordRow(['인', '킹', '도', '주', '하', '올']),
+              _buildWordRow(letters), // 보유 글자 표시
               SizedBox(height: 20),
               _buildOptionsBox(context), // 단어 조합하기와 프로필 수정을 포함한 박스
               SizedBox(height: 30),
-              _buildBingoSection(context), // 수정된 빙고 섹션
+              _buildBingoSection(context), // 빙고 섹션
             ],
           ),
         ),
@@ -128,9 +260,8 @@ class MyPage extends StatelessWidget {
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: words
-                .map(
-                  (word) => CircleAvatar(
+            children: words.map((word) {
+              return CircleAvatar(
                 backgroundColor: Color(0xFF9E7E49),
                 radius: 20,
                 child: Text(
@@ -141,16 +272,15 @@ class MyPage extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            )
-                .toList(),
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildOptionsBox(BuildContext context) { // context를 전달받음
+  Widget _buildOptionsBox(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -168,7 +298,7 @@ class MyPage extends StatelessWidget {
                 children: [
                   TextSpan(text: '단어 조합하기 ('),
                   TextSpan(
-                    text: '8개',
+                    text: '$combiCount개', // combiCount 값을 동적으로 표시
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextSpan(text: ' 보유)'),
@@ -178,7 +308,6 @@ class MyPage extends StatelessWidget {
             ),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              // 단어 조합하기 페이지로 이동
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -217,7 +346,6 @@ class MyPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // PayGO! BINGO! 이미지와 남은 빙고 텍스트를 함께 배치
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -231,30 +359,28 @@ class MyPage extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  '남은 빙고 : 1빙고',
+                  '남은 빙고 : $requiredBingoCount빙고',
                   style: TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
           SizedBox(height: 16),
-          // 남은 글자 제목
           Text(
             '남은 글자',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
-          // 남은 글자 아이콘들
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: ['템', '템', '템', '템', '템'].map((letter) {
+            children: letters.map((letter) {
               return Container(
-                width: 50, // 정사각형을 위해 가로 세로 고정
+                width: 50,
                 height: 50,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Color(0xFFFFF2CC),
-                  borderRadius: BorderRadius.circular(10), // 둥근 네모 스타일
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   letter,
@@ -268,7 +394,6 @@ class MyPage extends StatelessWidget {
             }).toList(),
           ),
           SizedBox(height: 16),
-          // 참여 가능한 미션 제목과 내용
           Text(
             '참여 가능한 미션',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -281,33 +406,7 @@ class MyPage extends StatelessWidget {
               Text('• KB 부동산 APP 설치하기', style: TextStyle(fontSize: 14)),
             ],
           ),
-          SizedBox(height: 5),
-          // 빙고 완성하러 가기 버튼
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => BingoMain()), // bingo_main.dart로 이동
-              );
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  '빙고 완성하러 가기',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black,
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 12,
-                  color: Colors.black,
-                ),
-              ],
-            ),
-          ),
+          SizedBox(height: 16),
         ],
       ),
     );
