@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:practice_first_flutter_project/puzzle/puzzle.dart';
 import 'package:practice_first_flutter_project/login/login.dart';
+import 'NotificationController.dart';
 import 'bingo_main.dart';
 import 'combination_words.dart';
 import 'widgets/app_above_bar.dart';
@@ -11,43 +13,6 @@ import 'hiddenword/hiddenword_prediction.dart';
 import 'hiddenword/hiddenword_open.dart';
 import 'package:http/http.dart' as http;
 
-List<Map<String, dynamic>> notifications = [
-  {
-    'id': 1,
-    'date': '24.10.31',
-    'category': '가입',
-    'title': '정인겸님이 가입신청하였습니다.',
-    'actions': [
-      {'label': '수락', 'onPressed': () {}},
-      {'label': '거절', 'onPressed': () {}}
-    ],
-  },
-  {
-    'id': 2,
-    'date': '24.10.30',
-    'category': '이벤트/혜택',
-    'title': '[광고] [히든 글자 확인하러 가기]\n어제 KB Pay로 결제하셨네요!\n히든 글자를 확인해보세요.',
-    'actions': [
-      {
-        'label': '자세히 보기',
-        'onPressed': (BuildContext context) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HiddenWordOpenPage(hiddenWord: '차'),
-            ),
-          );
-        }
-      }
-    ],
-  },
-  {
-    'id': 3,
-    'date': '24.10.28',
-    'category': '결제',
-    'title': '[KB Pay 사용 알림] 체크 7306\n4,500원\n스타벅스 광화문점 승인',
-  },
-];
 
 class GlobalProvider extends GetxController {
   RxInt memberId = 0.obs;
@@ -63,6 +28,7 @@ class GlobalProvider extends GetxController {
 
 void main() {
   Get.put(GlobalProvider());
+  Get.put(NotificationController()); // NotificationController 등록
   runApp(
     YesterPayApp(),
   );
@@ -90,10 +56,16 @@ class YesterPayMainContent extends StatefulWidget {
 class _YesterPayMainContentState extends State<YesterPayMainContent> {
   final PageController _pageController = PageController();
   int _currentPage = 2;
+  String requiredBingoCount = '로딩 중...';
+  List<String> letters = [];
+
 
   @override
   void initState() {
     super.initState();
+
+
+
     Future.delayed(Duration.zero, () {
       Timer.periodic(Duration(seconds: 3), (Timer timer) {
         if (_pageController.hasClients) {
@@ -106,6 +78,54 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
         }
       });
     });
+    Future<void> fetchLetters() async {
+      try {
+        final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
+        if (response.statusCode == 200) {
+          final decodedBody = utf8.decode(response.bodyBytes);
+          final data = json.decode(decodedBody) as List;
+          setState(() {
+            letters = data.map((item) => item.toString()).toList();
+          });
+        } else {
+          print('Error: ${response.statusCode}, Body: ${response.body}');
+          setState(() {
+            letters = [];
+          });
+        }
+      } catch (e) {
+        print('Exception: $e');
+        setState(() {
+          letters = [];
+        });
+      }
+    }
+    Future<void> fetchRequiredBingoCount() async {
+      try {
+        final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
+        if (response.statusCode == 200) {
+          final decodedBody = utf8.decode(response.bodyBytes);
+          final data = json.decode(decodedBody);
+          print('Required Bingo Count Response Data: $data');
+
+          setState(() {
+            requiredBingoCount = data['requiredBingoCount']?.toString() ?? '0'; // 남은 빙고 수 값 저장
+          });
+        } else {
+          print('Error: ${response.statusCode}, Body: ${response.body}');
+          setState(() {
+            requiredBingoCount = '0';
+          });
+        }
+      } catch (e) {
+        print('Exception: $e');
+        setState(() {
+          requiredBingoCount = '0';
+        });
+      }
+    }
+    fetchLetters();
+    fetchRequiredBingoCount();
   }
 
   @override
@@ -118,9 +138,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   Widget build(BuildContext context) {
     final GlobalProvider pro = Get.find<GlobalProvider>();
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(),// 전역 변수 사용
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
@@ -129,7 +147,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Obx(() => Text('Member ID: ${pro.getMemberId()}')),
+              //Obx(() => Text('Member ID: ${pro.getMemberId()}')),
               Stack(
                 children: [
                   ClipRRect(
@@ -179,11 +197,19 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     height: 24,
                   ),
                   title: Row(
-                    children: const [
+                    children: [
                       Text('PAYGO! BINGO!',
                           style: TextStyle(fontWeight: FontWeight.bold)),
-                      Spacer(),
-                      Text('1빙고 / 3빙고', style: TextStyle(color: Colors.red)),
+                      //Spacer(),
+                      Expanded(
+                        //flex: 1, // 비율 설정 (전체 Row의 1/3 공간 차지)
+                        child: Text(
+                          '$requiredBingoCount빙고/3빙고',
+                          style: TextStyle(color: Colors.red),
+                          textAlign: TextAlign.right, // 오른쪽 정렬
+                          //overflow: TextOverflow.ellipsis, // 텍스트 잘림 처리
+                        ),
+                      ),
                     ],
                   ),
                   subtitle: Text('빙고 완성하러 가기'),
@@ -310,17 +336,21 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     Wrap(
                       spacing: 8.0,
                       runSpacing: 8.0,
-                      children: [
-                        for (var word in ['인', '킹', '도', '주', '하', '연'])
-                          Container(
-                            padding: EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              color: Colors.orange[100],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(word, style: TextStyle(fontSize: 18)),
+                      children: letters.isEmpty
+                          ? [Text('보유한 단어가 없습니다.')]
+                          : letters.map((word) {
+                        return Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            shape: BoxShape.circle,
                           ),
-                      ],
+                          child: Text(
+                            word,
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),

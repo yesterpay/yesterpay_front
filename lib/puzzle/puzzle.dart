@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
 import 'package:practice_first_flutter_project/puzzle/proposal_word.dart';
 import 'package:practice_first_flutter_project/puzzle/team_info.dart';
 
+import '../NotificationController.dart';
 import '../main.dart';
 import '../widgets/app_above_bar.dart';
 
@@ -56,6 +59,9 @@ class _CrosswordPageState extends State<CrosswordPage> {
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
     for (var word in wordClues) {
       int x = word['start'][0];
       int y = word['start'][1];
@@ -187,9 +193,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(

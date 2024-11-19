@@ -223,9 +223,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(),
       body: FutureBuilder<List<TeamMember>>(
         future: futureTeamMembers,
         builder: (context, snapshot) {
