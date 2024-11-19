@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart'; // CustomBottomNavigationBar가 정의된 파일
 import 'package:practice_first_flutter_project/bingo_main.dart';
 import 'package:practice_first_flutter_project/combination_words.dart'; // CombinationWordsPage 파일을 불러옴
+import '../NotificationController.dart';
 import '../main.dart'; // bingo_main.dart 파일을 불러옴
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,6 +27,9 @@ class _MyPageState extends State<MyPage> {
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
     fetchMemberData();
     fetchLetters();
     fetchBingoLevel();
@@ -32,7 +38,7 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchMemberData() async {
     try {
-      final response = await http.get(Uri.parse('http://3.39.224.114:8080/member/1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -64,7 +70,7 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchLetters() async {
     try {
-      final response = await http.get(Uri.parse('http://3.39.224.114:8080/member/1/letter'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody) as List;
@@ -90,7 +96,7 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchBingoLevel() async {
     try {
-      final response = await http.get(Uri.parse('http://3.39.224.114:8080/bingo/board?memberId=1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=1'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -115,7 +121,7 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchRequiredBingoCount() async {
     try {
-      final response = await http.get(Uri.parse('http://3.39.224.114:8080/bingo/status?memberId=1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -142,9 +148,7 @@ class _MyPageState extends State<MyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Color(0xFFF8F6F2),
       body: SingleChildScrollView(
         child: Padding(

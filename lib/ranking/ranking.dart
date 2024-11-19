@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
 import 'package:practice_first_flutter_project/main.dart';
 import 'package:intl/intl.dart';
+
+import '../NotificationController.dart';
 
 class WeeklyRankingPage extends StatefulWidget {
   const WeeklyRankingPage({Key? key}) : super(key: key);
@@ -32,9 +36,7 @@ class _WeeklyRankingPageState extends State<WeeklyRankingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty,
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
@@ -220,6 +222,9 @@ class _WeeklyRankingPageState extends State<WeeklyRankingPage> {
 }
 
 void main() {
+  if (!Get.isRegistered<NotificationController>()) {
+    Get.put(NotificationController());
+  }
   runApp(const MaterialApp(
     home: WeeklyRankingPage(),
   ));
