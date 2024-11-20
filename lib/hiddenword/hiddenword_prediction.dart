@@ -410,7 +410,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('히든 글자 예측하기', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(
+          '히든 글자 예측하기',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -418,6 +421,7 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
           },
         ),
         elevation: 0,
+        backgroundColor: Colors.white, // 앱바 배경 색상을 흰색으로 설정
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
