@@ -360,7 +360,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -368,7 +368,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         const Text(
                           '내 단어',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         TextButton(
                           onPressed: () {
@@ -388,20 +388,20 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                       ],
                     ),
                     Wrap(
-                      spacing: 8.0,
+                      spacing: 10.0,
                       runSpacing: 8.0,
                       children: letters.isEmpty
                           ? [const Text('보유한 단어가 없습니다.')]
                           : letters.map((word) {
                         return Container(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(14.0),
                           decoration: BoxDecoration(
                             color: Colors.orange[100],
                             shape: BoxShape.circle,
                           ),
                           child: Text(
                             word,
-                            style: const TextStyle(fontSize: 18),
+                            style: const TextStyle(fontSize: 22),
                           ),
                         );
                       }).toList(),
