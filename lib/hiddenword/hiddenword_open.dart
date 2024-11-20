@@ -1,26 +1,163 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HiddenWordOpenPage extends StatefulWidget {
-  final String hiddenWord;
-  final List<String> paymentHistory = ['공차', '도미노피자', '버거킹']; // 예시 결제 내역
-
-  HiddenWordOpenPage({required this.hiddenWord});
-
   @override
   _HiddenWordOpenPageState createState() => _HiddenWordOpenPageState();
 }
 
 class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
-  List<String> ownedLetters = ['인', '킹', '도', '주', '하', '올']; // 초기 보유 글자 목록 (6개로 설정)
-  String selectedLetter = ''; // selectedLetter를 여기서 선언하여 팝업 전체에서 접근 가능하게 함
+  List<String> ownedLetters = [];
+  String selectedLetter = '';
+  String hiddenWord = '';
+  bool isHiddenWordSuccess = false;
 
-  bool checkHiddenWordInHistory() {
-    return widget.paymentHistory.any((entry) => entry.contains(widget.hiddenWord));
+  @override
+  void initState() {
+    super.initState();
+    fetchOwnedLetters();
   }
 
-  void showReplaceDialog() {
+  Future<void> fetchOwnedLetters() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://3.34.102.55:8080/member/1/letter'),
+      );
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody) as List;
+
+        setState(() {
+          ownedLetters = data.map((item) => item.toString()).toList();
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          ownedLetters = [];
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        ownedLetters = [];
+      });
+    }
+  }
+
+  Future<void> showHiddenWordPopup() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://3.34.102.55:8080/member/1/payment/is-include-hidden-letter?date=2024-11-19'),
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+
+        final isInclude = data['isInclude'];
+        final letter = data['letter'];
+
+        setState(() {
+          hiddenWord = letter;
+          isHiddenWordSuccess = isInclude;
+        });
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    isInclude
+                        ? '히든 글자는 "$letter" 입니다!\n새로운 글자를 획득하셨습니다!'
+                        : '히든 글자는 "$letter" 입니다.\n아쉽지만 획득하지 못했어요.\n내일 기회를 잡아보세요.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Color(0xFF6E6053),
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 80, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      if (isInclude && !ownedLetters.contains(letter)) {
+                        addHiddenWordToOwnedLetters(letter);
+                      }
+                    },
+                    child: Text(
+                      '확인',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        _showErrorDialog();
+      }
+    } catch (e) {
+      print('Exception occurred: $e');
+      _showErrorDialog();
+    }
+  }
+
+  void _showErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          content: Text(
+            '서버와의 연결에 실패했습니다.\n잠시 후 다시 시도해주세요.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void addHiddenWordToOwnedLetters(String letter) {
+    if (!ownedLetters.contains(letter)) {
+      setState(() {
+        if (ownedLetters.length < 6) {
+          ownedLetters.add(letter);
+        } else {
+          showReplaceDialog(letter);
+        }
+      });
+    }
+  }
+
+  void showReplaceDialog(String newLetter) {
     setState(() {
-      selectedLetter = ownedLetters[0]; // Dialog가 열릴 때 selectedLetter를 초기화
+      selectedLetter = ownedLetters.isNotEmpty ? ownedLetters[0] : '';
     });
 
     showDialog(
@@ -49,10 +186,13 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    if (selectedLetter != "바꾸지 않기" && ownedLetters.contains(selectedLetter)) {
+                    if (selectedLetter != "바꾸지 않기" &&
+                        ownedLetters.contains(selectedLetter)) {
                       setState(() {
-                        ownedLetters[ownedLetters.indexOf(selectedLetter)] = widget.hiddenWord;
+                        ownedLetters[ownedLetters.indexOf(selectedLetter)] =
+                            newLetter;
                       });
+                      replaceLetter(selectedLetter, newLetter);
                     }
                     Navigator.of(context).pop();
                   },
@@ -94,20 +234,29 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
               .toList(),
         ),
       );
-      rows.add(SizedBox(height: 10)); // 각 줄 사이의 간격 추가
+      rows.add(SizedBox(height: 10));
     }
     return rows;
   }
 
-  void addHiddenWordToOwnedLetters() {
-    if (!ownedLetters.contains(widget.hiddenWord)) {
-      setState(() {
-        if (ownedLetters.length < 6) {
-          ownedLetters.add(widget.hiddenWord);
-        } else {
-          showReplaceDialog();
-        }
-      });
+  Future<void> replaceLetter(String existingLetter, String newLetter) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://3.34.102.55:8080/member/1/letter/new'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'existingLetterList': [existingLetter],
+          'newLetterList': [newLetter],
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Letter replacement successful');
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e) {
+      print('Exception: $e');
     }
   }
 
@@ -124,13 +273,12 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
         title: Text('히든글자 공개', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(0),
+      body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 20.0), // 위쪽 여백 추가
+              padding: const EdgeInsets.only(top: 20.0),
               child: Text(
                 'KB Pay 로 결제한 가게에\n히든글자가 있다면 포인트리 지급!',
                 textAlign: TextAlign.center,
@@ -140,7 +288,7 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
             Align(
               alignment: Alignment.centerLeft,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10.0), // 이미지와 버튼 사이의 여백 설정
+                padding: const EdgeInsets.only(bottom: 10.0),
                 child: Image.asset(
                   'assets/images/payment_image.png',
                   height: 350,
@@ -148,51 +296,7 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
-                bool hasHiddenWord = checkHiddenWordInHistory();
-                String contentMessage = hasHiddenWord
-                    ? '히든 글자는 ${widget.hiddenWord} 입니다!\n새로운 글자를 획득하셨습니다!'
-                    : '히든 글자는 ${widget.hiddenWord} 입니다.\n아쉽지만 획득하지 못했어요.\n내일 기회를 잡아보세요.';
-
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      content: Text(
-                        contentMessage,
-                        textAlign: TextAlign.center,
-                      ),
-                      actions: [
-                        Center(
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                              backgroundColor: Color(0xFF6E6053),
-                              padding: EdgeInsets.symmetric(horizontal: 90, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(
-                              '닫기',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ).then((_) {
-                  if (hasHiddenWord) {
-                    addHiddenWordToOwnedLetters();
-                  }
-                });
-              },
+              onPressed: showHiddenWordPopup,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 foregroundColor: Colors.black,
@@ -217,25 +321,27 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // 텍스트를 왼쪽 정렬
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '현재 보유 글자',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start, // 글자 아이템을 왼쪽 정렬
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         for (var letter in ownedLetters)
                           Padding(
-                            padding: const EdgeInsets.only(right: 9.0), // 글자 간격 설정
+                            padding: const EdgeInsets.only(right: 9.0),
                             child: CircleAvatar(
                               radius: 25,
                               backgroundColor: Colors.amber[100],
                               child: Text(
                                 letter,
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -262,7 +368,8 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
                     children: [
                       Text(
                         '서비스 이용 안내',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 10),
                       Text(
