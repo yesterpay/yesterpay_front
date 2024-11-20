@@ -11,8 +11,11 @@ class TeamRecruitmentPage extends StatefulWidget {
   _TeamRecruitmentPageState createState() => _TeamRecruitmentPageState();
 }
 
+
 class _TeamRecruitmentPageState extends State<TeamRecruitmentPage> {
   int currentIndex = 1;
+
+
   final Color emissionBtnColor = Color(0xFFFAB809);
   final Color cancelBtnColor = Color(0xFF6E6053);
 

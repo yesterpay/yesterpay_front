@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
-import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
-import 'package:practice_first_flutter_project/combination_words.dart';
-import '../main.dart';
+import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart'; // CustomBottomNavigationBar가 정의된 파일
+import 'package:practice_first_flutter_project/bingo_main.dart';
+import 'package:practice_first_flutter_project/combination_words.dart'; // CombinationWordsPage 파일을 불러옴
+import '../NotificationController.dart';
+import '../main.dart'; // bingo_main.dart 파일을 불러옴
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -17,84 +21,24 @@ class _MyPageState extends State<MyPage> {
   String bingoLevel = '로딩 중...';
   String combiCount = '로딩 중...';
   String title = '로딩 중...';
-  String profileImageUrl = '';
-  int bingoCount = 0;
-  int requiredBingoCount = 0;
+  String requiredBingoCount = '로딩 중...';
   List<String> letters = [];
-  List<String> remainingLetters = [];
-  List<String> missions = [];
 
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
     fetchMemberData();
     fetchLetters();
     fetchBingoLevel();
     fetchRequiredBingoCount();
-    fetchBingoCount();
-    fetchRemainingLetters();
-    fetchMissions();
-  }
-
-  Future<void> fetchRemainingLetters() async {
-    try {
-      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=1'));
-      if (response.statusCode == 200) {
-        final decodedBody = utf8.decode(response.bodyBytes);
-        final data = json.decode(decodedBody);
-        print('API Response Data: $data');
-
-        final List<dynamic> bingoLetterList = data['bingoLetterList'];
-
-        setState(() {
-          remainingLetters = bingoLetterList
-              .where((item) => item['letter'] != 'M' && item['isCheck'] == false)
-              .map<String>((item) => item['letter'].toString())
-              .toList();
-        });
-      } else {
-        print('Error: ${response.statusCode}, Body: ${response.body}');
-        setState(() {
-          remainingLetters = [];
-        });
-      }
-    } catch (e) {
-      print('Exception: $e');
-      setState(() {
-        remainingLetters = [];
-      });
-    }
-  }
-
-  Future<void> fetchMissions() async {
-    try {
-      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/mission?memberId=1'));
-      if (response.statusCode == 200) {
-        final decodedBody = utf8.decode(response.bodyBytes);
-        final data = json.decode(decodedBody);
-        print('Missions Response Data: $data');
-
-        final List<dynamic> missionList = [data['mission']];
-        setState(() {
-          missions = missionList.map<String>((mission) => mission.toString()).toList();
-        });
-      } else {
-        print('Error: ${response.statusCode}, Body: ${response.body}');
-        setState(() {
-          missions = [];
-        });
-      }
-    } catch (e) {
-      print('Exception: $e');
-      setState(() {
-        missions = [];
-      });
-    }
   }
 
   Future<void> fetchMemberData() async {
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/member/1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -105,9 +49,6 @@ class _MyPageState extends State<MyPage> {
           point = data['point']?.toString() ?? '0';
           combiCount = data['combiCount']?.toString() ?? '0';
           title = data['title']?.toString() ?? '0';
-          profileImageUrl = data['imgUrl']?.startsWith('http') ?? false
-              ? data['imgUrl']
-              : 'http://3.34.102.55:8080' + data['imgUrl'];
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
@@ -115,7 +56,6 @@ class _MyPageState extends State<MyPage> {
           nickName = '닉네임 불러오기 실패';
           point = '0';
           combiCount = '0';
-          profileImageUrl = '';
         });
       }
     } catch (e) {
@@ -124,20 +64,20 @@ class _MyPageState extends State<MyPage> {
         nickName = '예외 발생';
         point = '0';
         combiCount = '0';
-        profileImageUrl = '';
       });
     }
   }
 
   Future<void> fetchLetters() async {
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/member/1/letter'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody) as List;
         print('Letters Response Data: $data');
 
         setState(() {
+          // API 응답 데이터를 리스트로 저장
           letters = data.map((item) => item.toString()).toList();
         });
       } else {
@@ -156,14 +96,14 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchBingoLevel() async {
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/bingo/board?memberId=1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=1'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
         print('Bingo Level Response Data: $data');
 
         setState(() {
-          bingoLevel = data['level']?.toString() ?? '0';
+          bingoLevel = data['level']?.toString() ?? '0'; // 빙고 레벨 값 저장
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
@@ -181,60 +121,34 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchRequiredBingoCount() async {
     try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/bingo/status?memberId=1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
         print('Required Bingo Count Response Data: $data');
 
         setState(() {
-          requiredBingoCount = data['requiredBingoCount'];
+          requiredBingoCount = data['requiredBingoCount']?.toString() ?? '0'; // 남은 빙고 수 값 저장
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
         setState(() {
-          requiredBingoCount = 0;
+          requiredBingoCount = '0';
         });
       }
     } catch (e) {
       print('Exception: $e');
       setState(() {
-        requiredBingoCount = 0;
+        requiredBingoCount = '0';
       });
     }
   }
 
-  Future<void> fetchBingoCount() async {
-    try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/bingo/status?memberId=1'));
-      if (response.statusCode == 200) {
-        final decodedBody = utf8.decode(response.bodyBytes);
-        final data = json.decode(decodedBody);
-        print('Bingo Count Response Data: $data');
-
-        setState(() {
-          bingoCount = data['bingoCount'];
-        });
-      } else {
-        print('Error: ${response.statusCode}, Body: ${response.body}');
-        setState(() {
-          bingoCount = 0;
-        });
-      }
-    } catch (e) {
-      print('Exception: $e');
-      setState(() {
-        bingoCount = 0;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty,
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Color(0xFFF8F6F2),
       body: SingleChildScrollView(
         child: Padding(
@@ -242,21 +156,18 @@ class _MyPageState extends State<MyPage> {
           child: Column(
             children: [
               ClipOval(
-                child: profileImageUrl.isNotEmpty
-                    ? Image.network(
-                  profileImageUrl,
-                  width: 80,
-                  height: 80,
+                child: Image.asset(
+                  'assets/images/profile_image.png',
+                  width: 120,
+                  height: 120,
                   fit: BoxFit.cover,
-                )
-                    : SizedBox.shrink(),
+                ),
               ),
-              SizedBox(height: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    nickName,
+                    nickName, // API에서 가져온 nick_name 표시
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -265,24 +176,24 @@ class _MyPageState extends State<MyPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Expanded(child: _buildStatBox(point, '포인트리')),
+                  Expanded(child: _buildStatBox(point, '포인트리')), // 포인트리 값
                   SizedBox(width: 10),
-                  Expanded(child: _buildStatBox(bingoLevel, '빙고 level')),
+                  Expanded(child: _buildStatBox(bingoLevel, '빙고 level')), // 빙고 레벨 값
                   SizedBox(width: 10),
                   Expanded(child: _buildStatBoxWithImage('assets/images/newbie.png', title)),
                 ],
               ),
               SizedBox(height: 20),
-              _buildWordRow(letters),
+              _buildWordRow(letters), // 보유 글자 표시
               SizedBox(height: 20),
-              _buildOptionsBox(context),
+              _buildOptionsBox(context), // 단어 조합하기와 프로필 수정을 포함한 박스
               SizedBox(height: 30),
-              _buildBingoSection(context),
+              _buildBingoSection(context), // 빙고 섹션
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 4),
+      bottomNavigationBar: CustomBottomNavigationBar(currentIndex: 4), // 하단 네비게이션 바
     );
   }
 
@@ -297,7 +208,10 @@ class _MyPageState extends State<MyPage> {
         children: [
           Text(
             value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: 4),
           Text(
@@ -318,7 +232,11 @@ class _MyPageState extends State<MyPage> {
       ),
       child: Column(
         children: [
-          Image.asset(imagePath, width: 24, height: 24),
+          Image.asset(
+            imagePath,
+            width: 24,
+            height: 24,
+          ),
           SizedBox(height: 4),
           Text(
             label,
@@ -339,7 +257,10 @@ class _MyPageState extends State<MyPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('내 단어', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            '내 단어',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -349,7 +270,11 @@ class _MyPageState extends State<MyPage> {
                 radius: 20,
                 child: Text(
                   word,
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               );
             }).toList(),
@@ -361,34 +286,48 @@ class _MyPageState extends State<MyPage> {
 
   Widget _buildOptionsBox(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Column(
         children: [
           ListTile(
             tileColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             title: Text.rich(
               TextSpan(
                 children: [
                   TextSpan(text: '단어 조합하기 ('),
                   TextSpan(
-                    text: '$combiCount개',
+                    text: '$combiCount개', // combiCount 값을 동적으로 표시
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextSpan(text: ' 보유)'),
                 ],
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16), // 기본 스타일
               ),
             ),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CombinationWordsPage()),
+                MaterialPageRoute(
+                  builder: (context) => CombinationWordsPage(),
+                ),
               );
             },
           ),
-          Divider(height: 1, color: Colors.grey[300], thickness: 1),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(
+              height: 1,
+              color: Colors.grey[300],
+              thickness: 1,
+            ),
+          ),
           ListTile(
             title: Text('프로필 수정하기'),
             trailing: Icon(Icons.arrow_forward_ios, size: 16),
@@ -404,46 +343,72 @@ class _MyPageState extends State<MyPage> {
   Widget _buildBingoSection(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Image.asset('assets/images/Paygo_Bingo.png', width: 300, height: 100),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '남은 빙고 : ${(requiredBingoCount - bingoCount).toString()}빙고',
-              style: TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold),
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Image.asset(
+                  'assets/images/Paygo_Bingo.png',
+                  width: 300,
+                  height: 100,
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '남은 빙고 : $requiredBingoCount빙고',
+                  style: TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16),
-          Text('남은 글자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            '남은 글자',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: remainingLetters.map((letter) {
+            children: letters.map((letter) {
               return Container(
-                width: 40,
-                height: 40,
+                width: 50,
+                height: 50,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: Color(0xFFFFF2CC), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFF2CC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Text(
                   letter,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF6B5E00)),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6B5E00),
+                  ),
                 ),
               );
             }).toList(),
           ),
           SizedBox(height: 16),
-          Text('참여 가능한 미션', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            '참여 가능한 미션',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: missions.isNotEmpty
-                ? missions.map((mission) => Text('• $mission', style: TextStyle(fontSize: 14))).toList()
-                : [Text('참여 가능한 미션이 없습니다.', style: TextStyle(fontSize: 14))],
+            children: [
+              Text('• KB 스타적금 II 상품 가입하기', style: TextStyle(fontSize: 14)),
+              Text('• KB 부동산 APP 설치하기', style: TextStyle(fontSize: 14)),
+            ],
           ),
           SizedBox(height: 16),
         ],

@@ -6,7 +6,8 @@ import '../alarm_page.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
-    final notificationController = Get.find<NotificationController>();
+    final NotificationController notificationController = Get.find<NotificationController>();
+
 
     return AppBar(
       scrolledUnderElevation: 0,

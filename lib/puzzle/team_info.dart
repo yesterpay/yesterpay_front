@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 // import '/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
+import '../NotificationController.dart';
 import 'team_list.dart';
 
 import '../main.dart';
@@ -47,6 +50,9 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
     futureTeamMembers = fetchTeamMembers();
   }
 
