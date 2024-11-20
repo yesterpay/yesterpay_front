@@ -173,7 +173,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HiddenWordOpenPage(hiddenWord: '차'),
+                            builder: (context) => HiddenWordOpenPage(),
                           ),
                         );
                       },
