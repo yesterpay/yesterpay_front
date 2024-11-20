@@ -375,8 +375,13 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => CombinationWordsPage()),
-                            );
+                                builder: (context) => CombinationWordsPage(),
+                              ),
+                            ).then((value) {
+                              if (value == true) {
+                                fetchLetters();
+                              }
+                            });
                           },
                           child: const Text('조합하기 >'),
                         ),
