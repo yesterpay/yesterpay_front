@@ -13,7 +13,6 @@ import 'widgets/bottom_navigation_bar.dart';
 import 'hiddenword/hiddenword_open.dart';
 import 'package:http/http.dart' as http;
 
-// Global 상태를 관리하는 Provider
 class GlobalProvider extends GetxController {
   RxInt memberId = 0.obs;
 
@@ -43,7 +42,7 @@ class YesterPayApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(), // 앱 시작 화면
+      home: LoginScreen(),
     );
   }
 }
@@ -58,8 +57,12 @@ class YesterPayMainContent extends StatefulWidget {
 class _YesterPayMainContentState extends State<YesterPayMainContent> {
   final PageController _pageController = PageController();
   int _currentPage = 2;
-  String requiredBingoCount = '로딩 중...';
+  String requiredBingoCount = '1';
+  String bingoCount = '0';
+  String crosswordCompletionRate = '83%';
   List<String> letters = [];
+  int? teamId;
+
 
   @override
   void initState() {
@@ -67,7 +70,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
     if (!Get.isRegistered<NotificationController>()) {
       Get.put(NotificationController());
     }
-    // 페이지 자동 전환 타이머 설정
+
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(seconds: 3), (Timer timer) {
         if (_pageController.hasClients) {
@@ -83,6 +86,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
 
     fetchLetters();
     fetchRequiredBingoCount();
+    fetchTeamIdAndCompletionRate();
   }
 
   Future<void> fetchLetters() async {
@@ -116,17 +120,61 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
         final data = json.decode(decodedBody);
         setState(() {
           requiredBingoCount = data['requiredBingoCount']?.toString() ?? '0';
+          bingoCount = data['bingoCount']?.toString() ?? '0';
+
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
         setState(() {
           requiredBingoCount = '0';
+          bingoCount = '0';
         });
       }
     } catch (e) {
       print('Exception: $e');
       setState(() {
         requiredBingoCount = '0';
+        bingoCount = '0';
+      });
+    }
+  }
+
+  Future<void> fetchTeamIdAndCompletionRate() async {
+    try {
+      final memberId = Get.find<GlobalProvider>().getMemberId();
+      final teamIdResponse = await http.get(Uri.parse('http://3.34.102.55:8080/member/$memberId'));
+      if (teamIdResponse.statusCode == 200) {
+        final decodedBody = utf8.decode(teamIdResponse.bodyBytes);
+        final data = json.decode(decodedBody);
+        setState(() {
+          teamId = data['puzzleTeamId'];
+        });
+
+        if (teamId != null) {
+          final rateResponse =
+          await http.get(Uri.parse('http://3.34.102.55:8080/puzzle/rate/$teamId'));
+          if (rateResponse.statusCode == 200) {
+            final decodedRate = utf8.decode(rateResponse.bodyBytes);
+            final rateData = json.decode(decodedRate);
+            setState(() {
+              crosswordCompletionRate = '${rateData['completionRate']}%';
+            });
+          } else {
+            setState(() {
+              crosswordCompletionRate = '0%';
+            });
+          }
+        }
+      } else {
+        setState(() {
+          teamId = null;
+          crosswordCompletionRate = '0%';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        teamId = null;
+        crosswordCompletionRate = '0%';
       });
     }
   }
@@ -208,7 +256,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       Expanded(
                         child: Text(
-                          '$requiredBingoCount빙고/3빙고',
+                          '$bingoCount빙고/$requiredBingoCount빙고',
                           style: const TextStyle(color: Colors.red),
                           textAlign: TextAlign.right,
                         ),
@@ -230,8 +278,8 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
               const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xFFD9D9D9), width: 1), // 테두리
-                  borderRadius: BorderRadius.circular(10), // 모서리 둥글게 처리
+                  border: Border.all(color: Color(0xFFD9D9D9), width: 1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
                   leading: Image.asset(
@@ -240,16 +288,17 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     height: 24,
                   ),
                   title: Row(
-                    children: const [
-                      Text('십자말 풀이',
+                    children: [
+                      const Text('십자말 풀이',
                           style: TextStyle(fontWeight: FontWeight.bold)),
-                      Spacer(),
-                      Text('완성률 : 55%', style: TextStyle(color: Colors.red)),
+                      const Spacer(),
+                      Text('완성률: $crosswordCompletionRate',
+                          style: const TextStyle(color: Colors.red)),
                     ],
                   ),
                   subtitle: Text('십자말 완성하러 가기'),
                   trailing: Padding(
-                    padding: EdgeInsets.only(right: 0.0), // 아이콘 오른쪽으로 이동
+                    padding: EdgeInsets.only(right: 0.0),
                     child: IconButton(
                       icon: Icon(Icons.arrow_forward_ios),
                       onPressed: () {
@@ -311,7 +360,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -319,35 +368,40 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         const Text(
                           '내 단어',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         TextButton(
                           onPressed: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => CombinationWordsPage()),
-                            );
+                                builder: (context) => CombinationWordsPage(),
+                              ),
+                            ).then((value) {
+                              if (value == true) {
+                                fetchLetters();
+                              }
+                            });
                           },
                           child: const Text('조합하기 >'),
                         ),
                       ],
                     ),
                     Wrap(
-                      spacing: 8.0,
+                      spacing: 10.0,
                       runSpacing: 8.0,
                       children: letters.isEmpty
                           ? [const Text('보유한 단어가 없습니다.')]
                           : letters.map((word) {
                         return Container(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(14.0),
                           decoration: BoxDecoration(
                             color: Colors.orange[100],
                             shape: BoxShape.circle,
                           ),
                           child: Text(
                             word,
-                            style: const TextStyle(fontSize: 18),
+                            style: const TextStyle(fontSize: 22),
                           ),
                         );
                       }).toList(),

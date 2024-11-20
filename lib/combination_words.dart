@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:practice_first_flutter_project/widgets/decomopseLetter.dart';
@@ -25,15 +24,15 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   bool isLeftBoxSelected = false;
   bool isRightBoxSelected = false;
 
-  void _copyLinkAndIncreaseCount() {
-    Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
-    setState(() {
-      combinePermissions++;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("링크가 복사되었습니다")),
-    );
-  }
+  // void _copyLinkAndIncreaseCount() {
+  //   Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
+  //   setState(() {
+  //     combinePermissions++;
+  //   });
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text("링크가 복사되었습니다")),
+  //   );
+  // }
 
   void _selectLetter(String letter) {
     setState(() {
@@ -55,12 +54,89 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     });
   }
 
-
   @override
   void initState() {
     super.initState();
     fetchRetainedLetters();
+    fetchCombinePermissions(); // 조합권 가져오기
   }
+
+  Future<void> fetchCombinePermissions() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+
+        setState(() {
+          combinePermissions = int.tryParse(data['combiCount']?.toString() ?? '2') ?? 2;
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          combinePermissions = 1; // 기본값 설정
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        combinePermissions = 1; // 기본값 설정
+      });
+    }
+  }
+
+  Future<void> _copyLinkAndIncreaseCount() async {
+    // 클립보드에 공유 링크 복사
+    Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
+
+    // 요청에 사용할 데이터
+    final Map<String, dynamic> requestData = {
+      "memberId": 1, // 실제 사용자의 memberId로 변경
+      "kakaoHashId": "unique-kakao-hash-id" // 카카오 해시 ID (친구 식별)
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://3.34.102.55:8080/combi/increase'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data.containsKey('combiCount')) {
+          setState(() {
+            combinePermissions = data['combiCount']; // 조합권 업데이트
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("조합권이 증가되었습니다. 현재 조합권: $combinePermissions")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("조합권 증가에 실패했습니다.")),
+          );
+        }
+      } else if (response.statusCode == 400) {
+        final data = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['msg'] ?? "이미 공유한 친구입니다.")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("서버 오류: 조합권 증가 실패")),
+        );
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("네트워크 오류: 조합권 증가 실패")),
+      );
+      print('Exception: $e');
+    }
+  }
+
 
   Future<void> fetchRetainedLetters() async {
     try {
@@ -85,10 +161,44 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     }
   }
 
+  Future<void> saveCombinationToDB(List<String> existingLetters, List<String> newLetters) async {
+    // 요청 데이터를 구성합니다.
+    final Map<String, dynamic> data = {
+      'existingLetterList': existingLetters.isNotEmpty ? existingLetters : null,
+      'newLetterList': newLetters
+    };
+
+    try {
+      // POST 요청을 보냅니다.
+      final response = await http.post(
+        Uri.parse('http://3.34.102.55:8080/member/1/letter/new'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
+
+      // 성공 여부에 따른 처리
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("조합이 성공적으로 저장되었습니다.")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("저장에 실패했습니다. 다시 시도해주세요.")),
+        );
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e) {
+      // 예외 처리
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("저장 중 오류가 발생했습니다.")),
+      );
+      print('Exception: $e');
+    }
+  }
+
 
   void _moveCharacterToBox(String character) {
     setState(() {
-      // Only allow moving characters if a box is selected
       if (!isLeftBoxSelected && !isRightBoxSelected) return;
 
       decomposedCharacters.remove(character);
@@ -163,11 +273,17 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
           finalConsonant: rightFinalConsonant,
         ).combineKoreanLetters(rightConsonant ?? "", rightVowel ?? "", rightFinalConsonant);
 
-        // 결합된 결과를 보유 글자에 반영
+        // 기존 글자와 새 글자 반영
         int firstIndex = retainedLetters.indexOf(selectedLetters[0]);
         int secondIndex = retainedLetters.indexOf(selectedLetters[1]);
         if (firstIndex != -1) retainedLetters[firstIndex] = leftCombined;
         if (secondIndex != -1) retainedLetters[secondIndex] = rightCombined;
+
+        // DB에 저장 호출
+        saveCombinationToDB(
+            [selectedLetters[0], selectedLetters[1]], // 기존 글자 리스트
+            [leftCombined, rightCombined] // 새 글자 리스트
+        );
 
         // 상태 초기화
         selectedLetters = [];
@@ -191,6 +307,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
 
 
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,7 +315,9 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
         title: Text("단어 조합하기"),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.of(context).pop(true); // true를 반환하며 창을 닫음
+          },
         ),
       ),
       body: SingleChildScrollView(
@@ -243,7 +362,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
                               ),
                               SizedBox(width: 5),
                               ElevatedButton(
-                                onPressed: _copyLinkAndIncreaseCount,
+                                onPressed: _copyLinkAndIncreaseCount, // 수정된 메서드 호출
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,
                                   backgroundColor: Colors.white,
@@ -251,6 +370,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
                                 ),
                                 child: Text("공유하고 조합권 받기", style: TextStyle(fontSize: 12)),
                               ),
+
                             ],
                           ),
                         ],

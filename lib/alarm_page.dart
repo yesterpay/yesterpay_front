@@ -38,51 +38,52 @@ class _AlarmPageState extends State<AlarmPage> {
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: Obx(() {
-        final notifications = selectedCategory == '전체'
-            ? notificationController.unreadNotifications
-            : notificationController.unreadNotifications
-                .where((notification) =>
-                    notification['category'] == selectedCategory)
-                .toList();
+      body: Container(
+        color: Colors.white, // 배경색을 흰색으로 설정
+        child: Obx(() {
+          final notifications = selectedCategory == '전체'
+              ? notificationController.unreadNotifications
+              : notificationController.unreadNotifications
+              .where((notification) => notification['category'] == selectedCategory)
+              .toList();
 
-        if (notifications.isEmpty) {
-          return Center(child: Text('해당 카테고리에 알림이 없습니다.'));
-        }
+          if (notifications.isEmpty) {
+            return Center(child: Text('해당 카테고리에 알림이 없습니다.'));
+          }
 
-        return Column(
-          children: [
-            // 카테고리 선택 버튼
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildTabButton('전체', selectedCategory == '전체'),
-                  _buildTabButton('결제', selectedCategory == '결제'),
-                  _buildTabButton('이벤트/혜택', selectedCategory == '이벤트/혜택'),
-                  _buildTabButton('가입', selectedCategory == '가입'),
-                  _buildTabButton('기타', selectedCategory == '기타'),
-                ].map((button) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 0.0), // 패딩 값을 8.0에서 4.0으로 줄임
-                    child: button,
-                  );
-                }).toList(),
+          return Column(
+            children: [
+              // 카테고리 선택 버튼
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildTabButton('전체', selectedCategory == '전체'),
+                    _buildTabButton('결제', selectedCategory == '결제'),
+                    _buildTabButton('이벤트/혜택', selectedCategory == '이벤트/혜택'),
+                    _buildTabButton('가입', selectedCategory == '가입'),
+                    _buildTabButton('기타', selectedCategory == '기타'),
+                  ].map((button) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0.0), // 패딩 값을 8.0에서 4.0으로 줄임
+                      child: button,
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: notifications.length,
-                itemBuilder: (context, index) {
-                  final notification = notifications[index];
-                  return _buildNotificationCard(notification);
-                },
+              Expanded(
+                child: ListView.builder(
+                  itemCount: notifications.length,
+                  itemBuilder: (context, index) {
+                    final notification = notifications[index];
+                    return _buildNotificationCard(notification);
+                  },
+                ),
               ),
-            ),
-          ],
-        );
-      }),
+            ],
+          );
+        }),
+      ),
     );
   }
 
@@ -120,7 +121,7 @@ class _AlarmPageState extends State<AlarmPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      elevation: 0,
+      elevation: 1,
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Padding(
         padding: const EdgeInsets.all(10.0),

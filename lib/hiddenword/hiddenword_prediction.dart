@@ -410,7 +410,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('히든 글자 예측하기', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(
+          '히든 글자 예측하기',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -418,6 +421,7 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
           },
         ),
         elevation: 0,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -461,40 +465,151 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: Text("참여 결과", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              backgroundColor: Colors.white,
+                              title: Row(
+                                children: [
+                                  Icon(Icons.history, color: Colors.orange, size: 24),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "참여 결과",
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                               content: isLoadingResults
                                   ? Center(child: CircularProgressIndicator())
                                   : participationResults.isEmpty
-                                  ? Text("이번 주 참여 기록이 없습니다.")
-                                  : Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: participationResults.map((result) {
-                                  return ListTile(
-                                    title: Text("${result['date']}"),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text("히든 글자: ${result['hiddenLetter']}"),
-                                        Text("예측 글자: ${result['predictLetter']}"),
-                                        Text("결과: ${result['isSuccess'] ? "성공" : "실패"}"),
-                                        if (result['isSuccess'])
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              fetchHiddenLetter(result['date']);
-                                            },
-                                            child: Text("히든 글자 받기"),
+                                  ? Text(
+                                "이번 주 참여 기록이 없습니다.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 16),
+                              )
+                                  : SingleChildScrollView(
+                                child: Column(
+                                  children: participationResults.map((result) {
+                                    final isSuccess = result['isSuccess'] ?? false;
+                                    final resultText = isSuccess ? '예측 성공' : '예측 실패';
+                                    final resultColor =
+                                    isSuccess ? Colors.green[100] : Colors.red[100];
+                                    final textColor =
+                                    isSuccess ? Colors.green[800] : Colors.red[800];
+                                    return Container(
+                                      margin: EdgeInsets.symmetric(vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color:Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black26, // 그림자 색상
+                                            offset: Offset(0, 2), // 그림자의 위치
+                                            blurRadius: 4, // 그림자의 흐림 정도
                                           ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                        ],
+                                      ),
+                                      padding: EdgeInsets.all(12),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "${result['date'] ?? '알 수 없음'}",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 6,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: resultColor,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  resultText,
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: textColor,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    "히든 글자: ",
+                                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    result['hiddenLetter'] ?? '없음',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.green[800], // 히든 글자 색상
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 12), // 히든 글자와 예측 글자 사이 간격 최소화
+                                                  Text(
+                                                    "예측 글자: ",
+                                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    result['predictLetter'] ?? '없음',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: isSuccess ? Colors.green[800] : Colors.red[800], // 성공 여부에 따라 색상 변경
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 8),
+                                          if (isSuccess)
+                                            Center(
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  fetchHiddenLetter(result['date']);
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Color(0xFFFAB809),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  "히든 글자 받기",
+                                                  style: TextStyle(color: Colors.white),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   },
-                                  child: Text("확인"),
+                                  child: Text(
+                                    "닫기",
+                                    style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ],
                             ),
