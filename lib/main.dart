@@ -7,6 +7,7 @@ import 'package:practice_first_flutter_project/puzzle/puzzle.dart';
 import 'NotificationController.dart';
 import 'bingo_main.dart';
 import 'combination_words.dart';
+import 'hiddenword/hiddenword_prediction.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'hiddenword/hiddenword_open.dart';
@@ -266,6 +267,42 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
 
               SizedBox(height: 16),
 
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.asset(
+                      'assets/images/down_yesterpay_home.png',
+                      fit: BoxFit.fitHeight,
+                      width: double.infinity,
+                      height: 240,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -8,
+                    left: 10,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HiddenWordPredictionPage(),
+                          ),
+                        );
+                      },
+                      child: Text('글자 예측하러 가기  ➜',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
               // 내 단어 섹션
               Container(
                 padding: const EdgeInsets.all(12.0),

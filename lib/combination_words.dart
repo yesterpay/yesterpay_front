@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:practice_first_flutter_project/widgets/decomopseLetter.dart';
 import 'package:practice_first_flutter_project/widgets/combineLetter.dart';
+import 'package:http/http.dart' as http;
 
 class CombinationWordsPage extends StatefulWidget {
   @override
@@ -10,7 +13,7 @@ class CombinationWordsPage extends StatefulWidget {
 
 class _CombinationWordsPageState extends State<CombinationWordsPage> {
   int combinePermissions = 2;
-  List<String> retainedLetters = ["인", "킹", "도", "주", "하", "올"];
+  List<String> retainedLetters = [];
   List<String> selectedLetters = [];
   List<String> decomposedCharacters = [];
   String? leftConsonant;
@@ -51,6 +54,37 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
       }
     });
   }
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRetainedLetters();
+  }
+
+  Future<void> fetchRetainedLetters() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody) as List;
+        setState(() {
+          retainedLetters = data.map((item) => item.toString()).toList();
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          retainedLetters = [];
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        retainedLetters = [];
+      });
+    }
+  }
+
 
   void _moveCharacterToBox(String character) {
     setState(() {
