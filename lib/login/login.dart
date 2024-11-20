@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     final String id = emailController.text;
     final String pw = passwordController.text;
-    const String serverUrl = 'http://10.0.2.2:8081/member/login';
+    const String serverUrl = 'http://3.34.102.55:8080/member/login';
     final url = Uri.parse(serverUrl);
 
     try {

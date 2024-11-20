@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:get/get_core/src/get_main.dart';
 
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
 import 'package:practice_first_flutter_project/puzzle/proposal_word.dart';
 import 'package:practice_first_flutter_project/puzzle/team_info.dart';
 
+import '../NotificationController.dart';
 import '../main.dart';
 import '../widgets/app_above_bar.dart';
 
@@ -88,10 +90,14 @@ class _CrosswordPageState extends State<CrosswordPage> {
     super.initState();
     final GlobalProvider pro = Get.find<GlobalProvider>();
     memberId = pro.getMemberId();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
     _fetchMemberInfo().then((_) {
       _fetchPuzzleWords(teamId); // teamId를 사용하여 단어 목록을 받아옵니다
     });
   }
+
 
   Future<void> _fetchMemberInfo() async {
     const String serverUrl = 'http://3.34.102.55:8080/member'; // API 주소
@@ -298,9 +304,7 @@ class _CrosswordPageState extends State<CrosswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(

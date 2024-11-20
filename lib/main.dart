@@ -1,71 +1,39 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:practice_first_flutter_project/puzzle/puzzle.dart';
 import 'package:practice_first_flutter_project/login/login.dart';
+import 'package:practice_first_flutter_project/puzzle/puzzle.dart';
+import 'NotificationController.dart';
 import 'bingo_main.dart';
 import 'combination_words.dart';
+import 'hiddenword/hiddenword_prediction.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
-import 'hiddenword/hiddenword_prediction.dart';
 import 'hiddenword/hiddenword_open.dart';
 import 'package:http/http.dart' as http;
 
-List<Map<String, dynamic>> notifications = [
-  {
-    'id': 1,
-    'date': '24.10.31',
-    'category': '가입',
-    'title': '정인겸님이 가입신청하였습니다.',
-    'actions': [
-      {'label': '수락', 'onPressed': () {}},
-      {'label': '거절', 'onPressed': () {}}
-    ],
-  },
-  {
-    'id': 2,
-    'date': '24.10.30',
-    'category': '이벤트/혜택',
-    'title': '[광고] [히든 글자 확인하러 가기]\n어제 KB Pay로 결제하셨네요!\n히든 글자를 확인해보세요.',
-    'actions': [
-      {
-        'label': '자세히 보기',
-        'onPressed': (BuildContext context) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HiddenWordOpenPage(hiddenWord: '차'),
-            ),
-          );
-        }
-      }
-    ],
-  },
-  {
-    'id': 3,
-    'date': '24.10.28',
-    'category': '결제',
-    'title': '[KB Pay 사용 알림] 체크 7306\n4,500원\n스타벅스 광화문점 승인',
-  },
-];
-
+// Global 상태를 관리하는 Provider
 class GlobalProvider extends GetxController {
   RxInt memberId = 0.obs;
 
-  setMemberId(int memberId) {
+  void setMemberId(int memberId) {
     this.memberId.value = memberId;
   }
 
-  getMemberId() {
+  int getMemberId() {
     return memberId.value;
   }
 }
 
 void main() {
-  Get.put(GlobalProvider());
-  runApp(
-    YesterPayApp(),
-  );
+  Get.put(GlobalProvider()); // GlobalProvider 등록
+  // if (!Get.isRegistered<NotificationController>()) {
+  //    Get.put(NotificationController()); // NotificationController 등록
+  // }
+
+  print('NotificationController registered');
+  runApp(const YesterPayApp());
 }
 
 class YesterPayApp extends StatelessWidget {
@@ -75,7 +43,7 @@ class YesterPayApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      home: LoginScreen(), // 앱 시작 화면
     );
   }
 }
@@ -90,22 +58,77 @@ class YesterPayMainContent extends StatefulWidget {
 class _YesterPayMainContentState extends State<YesterPayMainContent> {
   final PageController _pageController = PageController();
   int _currentPage = 2;
+  String requiredBingoCount = '로딩 중...';
+  List<String> letters = [];
 
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
+    // 페이지 자동 전환 타이머 설정
     Future.delayed(Duration.zero, () {
-      Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      Timer.periodic(const Duration(seconds: 3), (Timer timer) {
         if (_pageController.hasClients) {
           _currentPage = (_currentPage + 1) % 5;
           _pageController.animateToPage(
             _currentPage,
-            duration: Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeIn,
           );
         }
       });
     });
+
+    fetchLetters();
+    fetchRequiredBingoCount();
+  }
+
+  Future<void> fetchLetters() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody) as List;
+        setState(() {
+          letters = data.map((item) => item.toString()).toList();
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          letters = [];
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        letters = [];
+      });
+    }
+  }
+
+  Future<void> fetchRequiredBingoCount() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+        setState(() {
+          requiredBingoCount = data['requiredBingoCount']?.toString() ?? '0';
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          requiredBingoCount = '0';
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        requiredBingoCount = '0';
+      });
+    }
   }
 
   @override
@@ -118,9 +141,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   Widget build(BuildContext context) {
     final GlobalProvider pro = Get.find<GlobalProvider>();
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(), // Custom AppBar 사용
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
@@ -129,7 +150,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Obx(() => Text('Member ID: ${pro.getMemberId()}')),
+              // 상단 배너
               Stack(
                 children: [
                   ClipRRect(
@@ -152,25 +173,28 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                HiddenWordOpenPage(hiddenWord: '차'),
+                            builder: (context) => HiddenWordOpenPage(),
                           ),
                         );
                       },
-                      child: Text('글자 확인하러 가기  ➔',
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        '글자 확인하러 가기  ➔',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+              // 빙고 섹션
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xFFD9D9D9), width: 1), // 테두리
-                  borderRadius: BorderRadius.circular(10), // 모서리 둥글게 처리
+                  border: Border.all(color: const Color(0xFFD9D9D9), width: 1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
                   leading: Image.asset(
@@ -179,30 +203,31 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     height: 24,
                   ),
                   title: Row(
-                    children: const [
-                      Text('PAYGO! BINGO!',
+                    children: [
+                      const Text('PAYGO! BINGO!',
                           style: TextStyle(fontWeight: FontWeight.bold)),
-                      Spacer(),
-                      Text('1빙고 / 3빙고', style: TextStyle(color: Colors.red)),
+                      Expanded(
+                        child: Text(
+                          '$requiredBingoCount빙고/3빙고',
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
                     ],
                   ),
-                  subtitle: Text('빙고 완성하러 가기'),
-                  trailing: Padding(
-                    padding: EdgeInsets.only(right: 0.0), // 아이콘 오른쪽으로 이동
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_forward_ios),
-                      onPressed: () {
-                        // BingoMain 페이지로 이동
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => BingoMain()),
-                        );
-                      },
-                    ),
+                  subtitle: const Text('빙고 완성하러 가기'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => BingoMain()),
+                      );
+                    },
                   ),
                 ),
               ),
-              SizedBox(height: 16), // 여백 추가
+              const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Color(0xFFD9D9D9), width: 1), // 테두리
@@ -241,6 +266,7 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
               ),
 
               SizedBox(height: 16),
+
               Stack(
                 children: [
                   ClipRRect(
@@ -277,10 +303,11 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                 ],
               ),
               SizedBox(height: 16),
+              // 내 단어 섹션
               Container(
-                padding: EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xFFD9D9D9)),
+                  border: Border.all(color: const Color(0xFFD9D9D9)),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: Column(
@@ -289,93 +316,70 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           '내 단어',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         TextButton(
                           onPressed: () {
-                            // 조합하기 페이지로 이동
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => CombinationWordsPage()),
                             );
                           },
-                          child: Text('조합하기 >'),
+                          child: const Text('조합하기 >'),
                         ),
                       ],
                     ),
                     Wrap(
                       spacing: 8.0,
                       runSpacing: 8.0,
-                      children: [
-                        for (var word in ['인', '킹', '도', '주', '하', '연'])
-                          Container(
-                            padding: EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              color: Colors.orange[100],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(word, style: TextStyle(fontSize: 18)),
+                      children: letters.isEmpty
+                          ? [const Text('보유한 단어가 없습니다.')]
+                          : letters.map((word) {
+                        return Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            shape: BoxShape.circle,
                           ),
-                      ],
+                          child: Text(
+                            word,
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
+              // 캐러셀 섹션
               SizedBox(
                 height: 310,
-                child: Stack(
-                  children: [
-                    PageView.builder(
-                      controller: _pageController,
-                      itemCount: 5,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentPage = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Column(
-                            children: [
-                              Image.asset(
-                                'assets/images/season_ad_${index + 1}.png',
-                                fit: BoxFit.fitHeight,
-                                width: double.infinity,
-                                height: 300,
-                              ),
-
-                              // Padding(
-                              //   padding: EdgeInsets.all(8.0),
-                              // ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    // Positioned(
-                    //   bottom: 16,
-                    //   left: 16,
-                    //   child: Container(
-                    //     padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    //     decoration: BoxDecoration(
-                    //       color: Colors.black54,
-                    //       borderRadius: BorderRadius.circular(8.0),
-                    //     ),
-                    //     child: Text(
-                    //       'Page ${_currentPage + 1} of 5',
-                    //       style: TextStyle(color: Colors.white),
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: 5,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: Image.asset(
+                        'assets/images/season_ad_${index + 1}.png',
+                        fit: BoxFit.fitHeight,
+                        width: double.infinity,
+                        height: 300,
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:practice_first_flutter_project/mypage/mypage.dart';
+import 'package:get/get.dart';
+import '../NotificationController.dart';
+import '../mypage/mypage.dart';
 import '../bingo_main.dart';
 import '../main.dart';
 import '../puzzle/puzzle.dart';
-import 'package:practice_first_flutter_project/ranking/ranking.dart';
+import '../ranking/ranking.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final int currentIndex;
 
-  CustomBottomNavigationBar(
-      {super.key, required this.currentIndex});
+  CustomBottomNavigationBar({super.key, required this.currentIndex});
 
   @override
   _CustomBottomNavigationBarState createState() =>
@@ -18,6 +19,7 @@ class CustomBottomNavigationBar extends StatefulWidget {
 
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   late int _currentIndex;
+  final notificationController = Get.find<NotificationController>();
 
   @override
   void initState() {
@@ -30,6 +32,10 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       _currentIndex = index;
     });
 
+    // 페이지 이동 시 알림 개수 업데이트
+    notificationController.fetchUnreadNotificationCount();
+
+    // 페이지 이동 처리
     if (index == 0) {
       Navigator.pushReplacement(
         context,

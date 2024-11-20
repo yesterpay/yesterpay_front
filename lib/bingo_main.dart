@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:math';
+import 'NotificationController.dart';
 import 'main.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
@@ -46,6 +47,9 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<NotificationController>()) {
+      Get.put(NotificationController());
+    }
     // 각 M 칸에 대해서만 애니메이션 컨트롤러와 애니메이션 초기화
     for (int i = 0; i < bingoItems.length; i++) {
       if (bingoItems[i] == 'M') {
@@ -240,9 +244,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
     final GlobalProvider pro = Get.find<GlobalProvider>();
 
     return Scaffold(
-      appBar: CustomAppBar(
-        hasNotifications: notifications.isNotEmpty, // 전역 변수 사용
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
@@ -250,7 +252,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Obx(() => Text('Member ID: ${pro.getMemberId()}')),
+              //Obx(() => Text('Member ID: ${pro.getMemberId()}')),
               Center(
                 child: Container(
                   width: double.infinity,
