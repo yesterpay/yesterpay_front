@@ -5,6 +5,56 @@ import 'NotificationController.dart';
 import 'main.dart';
 import 'widgets/app_above_bar.dart';
 import 'widgets/bottom_navigation_bar.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class BingoDTO {
+  final int bingoBoardId;
+  final int level;
+  final int requiredBingoCount;
+  final List<BingoCellDTO> bingoLetterList;
+
+  BingoDTO({
+    required this.bingoBoardId,
+    required this.level,
+    required this.requiredBingoCount,
+    required this.bingoLetterList,
+  });
+
+  factory BingoDTO.fromJson(Map<String, dynamic> json) {
+    return BingoDTO(
+      bingoBoardId: json['bingoBoardId'],
+      level: json['level'],
+      requiredBingoCount: json['requiredBingoCount'],
+      bingoLetterList: (json['bingoLetterList'] as List)
+          .map((cell) => BingoCellDTO.fromJson(cell))
+          .toList(),
+    );
+  }
+}
+
+class BingoCellDTO {
+  final int bingoLetterId;
+  final int index;
+  final String letter;
+  final bool isCheck;
+
+  BingoCellDTO({
+    required this.bingoLetterId,
+    required this.index,
+    required this.letter,
+    required this.isCheck,
+  });
+
+  factory BingoCellDTO.fromJson(Map<String, dynamic> json) {
+    return BingoCellDTO(
+      bingoLetterId: json['bingoLetterId'],
+      index: json['index'],
+      letter: json['letter'],
+      isCheck: json['isCheck'],
+    );
+  }
+}
 
 class BingoMain extends StatefulWidget {
   const BingoMain({super.key});
@@ -14,7 +64,7 @@ class BingoMain extends StatefulWidget {
 }
 
 class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
-  final List<String> bingoItems = ['페', '템', 'M', 'M', '제', '빙', '상', 'M', '응'];
+  List<String> bingoItems = List.filled(9, '');
   final List<String?> images = [
     null,
     'assets/images/img_characters05.png',
@@ -26,6 +76,8 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
     null,
     'assets/images/img_characters02.png', // 상단 왼쪽 캐릭터 이미지
   ];
+
+  late int memberId;
 
   final List<Alignment> imageAlignments = [
     Alignment.center,
@@ -42,23 +94,247 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
   final Map<int, AnimationController> _controllers =
       {}; // 각 M 칸에 대한 AnimationController
   final Map<int, Animation<double>> _flipAnimations = {}; // 각 M 칸에 대한 Animation
-  List<bool> isFlipped = List.generate(9, (_) => false); // 각 칸의 뒤집힘 상태를 저장
+  List<bool> isFlipped = List.filled(9, false); // 각 칸의 뒤집힘 상태를 저장
+  bool isLoading = true; // 로딩 상태 추가
+  bool hasError = false; // 에러 상태 추가
+  String? missionText;
 
   @override
   void initState() {
     super.initState();
+    final GlobalProvider pro = Get.find<GlobalProvider>();
+    memberId = pro.getMemberId();
     if (!Get.isRegistered<NotificationController>()) {
       Get.put(NotificationController());
     }
-    // 각 M 칸에 대해서만 애니메이션 컨트롤러와 애니메이션 초기화
+    _initializeData();
+  }
+
+  void _animationInit() {
+    // 기존 컨트롤러 정리
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    _controllers.clear();
+    _flipAnimations.clear();
+
     for (int i = 0; i < bingoItems.length; i++) {
-      if (bingoItems[i] == 'M') {
+      if (bingoItems[i] == 'M' || isFlipped[i]) {
         final controller = AnimationController(
             vsync: this, duration: Duration(milliseconds: 500));
         final animation = Tween(begin: 0.0, end: pi).animate(controller);
         _controllers[i] = controller;
         _flipAnimations[i] = animation;
+
+        if (isFlipped[i]) {
+          controller.value = pi; // 뒤집힌 상태로 초기화
+        }
       }
+    }
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      await _fetchMission();
+      await _fetchBingoBoard();
+      // _animationInit();
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        hasError = true;
+        isLoading = false;
+      });
+      print('Error initializing data: $e');
+    }
+  }
+
+  Future<void> _fetchBingoBoard() async {
+    const String serverUrl = 'http://10.0.2.2:8081/bingo/board';
+    final url =
+        Uri.parse('$serverUrl?memberId=$memberId'); // memberId를 적절히 설정하세요.
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
+        final bingoBoard = BingoDTO.fromJson(jsonData);
+
+        // bingoItems 및 isFlipped 상태 업데이트
+        setState(() {
+          bingoItems = List.generate(9, (index) {
+            final cell = bingoBoard.bingoLetterList.firstWhere(
+              (cell) => cell.index == index,
+              orElse: () => BingoCellDTO(
+                bingoLetterId: 0,
+                index: index,
+                letter: '',
+                isCheck: false,
+              ),
+            );
+            return cell.letter;
+          });
+
+          isFlipped = List.generate(9, (index) {
+            final cell = bingoBoard.bingoLetterList.firstWhere(
+              (cell) => cell.index == index,
+              orElse: () => BingoCellDTO(
+                bingoLetterId: 0,
+                index: index,
+                letter: '',
+                isCheck: false,
+              ),
+            );
+            return cell.isCheck; // isCheck 값에 따라 뒤집힘 상태 설정
+          });
+
+          for (int i = 0; i < isFlipped.length; i++) {
+            if (isFlipped[i]) {
+              _controllers[i]?.forward(from: 0.0); // 애니메이션 실행
+            }
+          }
+          // 초기화된 데이터로 애니메이션 설정
+          _animationInit();
+        });
+      } else {
+        print('Failed to fetch bingo board: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching bingo board: $e');
+    }
+  }
+
+  Future<void> _fetchMission() async {
+    const String serverUrl = 'http://10.0.2.2:8081/bingo/mission';
+    final url = Uri.parse('$serverUrl?memberId=$memberId'); // memberId 설정
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
+        print('미션 확인 $jsonData');
+        setState(() {
+          missionText = jsonData['mission']; // 미션 텍스트 저장
+        });
+      } else {
+        print('Failed to fetch mission: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching mission: $e');
+    }
+  }
+
+  Future<void> _missionExecution(int index) async {
+    const String serverUrl = 'http://10.0.2.2:8081/bingo/mission/success';
+    final url = Uri.parse(serverUrl);
+
+    final Map<String, dynamic> data = {
+      'memberId': memberId,
+      'index': index,
+      'isSuccess': true
+    };
+
+    try {
+      final response = await http.post(url, body: jsonEncode(data), headers: {
+        'Content-Type': 'application/json',
+      });
+      print('미션됐나?? ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
+        print('미션결과 $jsonData');
+        if (jsonData['isBingoBoardFinished']) {
+          _showBingoSuccessModal();
+        }
+      }
+    } catch (e) {
+      print('Error ececution mission: $e');
+    }
+  }
+
+  void _showBingoSuccessModal() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 50,
+              ),
+              SizedBox(height: 16),
+              Text(
+                '빙고 완성!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                '축하합니다! 빙고판을 완성했습니다!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[700],
+                ),
+              ),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop(); // 모달 닫기
+                  await _refreshBingoBoard();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  '확인',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _refreshBingoBoard() async {
+    setState(() {
+      isLoading = true; // 로딩 상태로 전환
+      bingoItems = List.filled(9, ''); // 기존 데이터를 초기화
+      isFlipped = List.filled(9, false); // 플립 상태 초기화
+    });
+
+    try {
+      await _fetchBingoBoard(); // 새로운 빙고 데이터를 가져옴
+      setState(() {
+        isLoading = false; // 로딩 상태 해제
+      });
+      _animationInit(); // 애니메이션 재초기화
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        hasError = true; // 에러 상태 설정
+      });
+      print('Error refreshing bingo board: $e');
     }
   }
 
@@ -98,7 +374,10 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('KB 스타적금 II 상품 가입하기'),
+              Text(
+                missionText ?? '미션을 불러오는 중...',
+                style: TextStyle(fontSize: 16),
+              ),
               SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -110,6 +389,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
                 ),
                 onPressed: () {
                   Navigator.of(context).pop();
+                  _missionExecution(index);
                   _flipCard(index); // 선택한 M 칸만 뒤집기
                 },
                 child: Text(
@@ -277,6 +557,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: GridView.builder(
+                  key: ValueKey(bingoItems),
                   itemCount: 9,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
