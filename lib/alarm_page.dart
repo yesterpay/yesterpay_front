@@ -4,6 +4,8 @@ import 'NotificationController.dart';
 import 'package:intl/intl.dart';
 
 class AlarmPage extends StatefulWidget {
+  const AlarmPage({super.key});
+
   @override
   _AlarmPageState createState() => _AlarmPageState();
 }
@@ -15,7 +17,16 @@ class _AlarmPageState extends State<AlarmPage> {
   @override
   void initState() {
     super.initState();
-    notificationController.fetchNotifications();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      await notificationController.fetchNotifications();
+      notificationController.setunreadNotificationCount(0);
+    } catch (e) {
+      print('Error initializing data: $e');
+    }
   }
 
   @override
@@ -31,11 +42,9 @@ class _AlarmPageState extends State<AlarmPage> {
         final notifications = selectedCategory == '전체'
             ? notificationController.unreadNotifications
             : notificationController.unreadNotifications
-            .where((notification) =>
-        notification['category'] == selectedCategory)
-            .toList();
-
-
+                .where((notification) =>
+                    notification['category'] == selectedCategory)
+                .toList();
 
         if (notifications.isEmpty) {
           return Center(child: Text('해당 카테고리에 알림이 없습니다.'));
@@ -55,7 +64,8 @@ class _AlarmPageState extends State<AlarmPage> {
                   _buildTabButton('기타', selectedCategory == '기타'),
                 ].map((button) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0.0), // 패딩 값을 8.0에서 4.0으로 줄임
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 0.0), // 패딩 값을 8.0에서 4.0으로 줄임
                     child: button,
                   );
                 }).toList(),
@@ -127,7 +137,8 @@ class _AlarmPageState extends State<AlarmPage> {
                 IconButton(
                   icon: Icon(Icons.close, color: Colors.grey),
                   onPressed: () {
-                    notificationController.removeNotification(notification['id']);
+                    notificationController
+                        .removeNotification(notification['id']);
                   },
                 ),
               ],
@@ -136,7 +147,9 @@ class _AlarmPageState extends State<AlarmPage> {
             Text(
               notification['category'],
               style: TextStyle(
-                  fontSize: 19, fontWeight: FontWeight.bold, color: Colors.orange),
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange),
             ),
             SizedBox(height: 8),
             Text(
