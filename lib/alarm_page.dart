@@ -4,6 +4,8 @@ import 'NotificationController.dart';
 import 'package:intl/intl.dart';
 
 class AlarmPage extends StatefulWidget {
+  const AlarmPage({super.key});
+
   @override
   _AlarmPageState createState() => _AlarmPageState();
 }
@@ -15,7 +17,16 @@ class _AlarmPageState extends State<AlarmPage> {
   @override
   void initState() {
     super.initState();
-    notificationController.fetchNotifications();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      await notificationController.fetchNotifications();
+      notificationController.setunreadNotificationCount(0);
+    } catch (e) {
+      print('Error initializing data: $e');
+    }
   }
 
   @override
@@ -127,7 +138,8 @@ class _AlarmPageState extends State<AlarmPage> {
                 IconButton(
                   icon: Icon(Icons.close, color: Colors.grey),
                   onPressed: () {
-                    notificationController.removeNotification(notification['id']);
+                    notificationController
+                        .removeNotification(notification['id']);
                   },
                 ),
               ],
@@ -136,7 +148,9 @@ class _AlarmPageState extends State<AlarmPage> {
             Text(
               notification['category'],
               style: TextStyle(
-                  fontSize: 19, fontWeight: FontWeight.bold, color: Colors.orange),
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange),
             ),
             SizedBox(height: 8),
             Text(
