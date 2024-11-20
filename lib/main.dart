@@ -57,9 +57,9 @@ class YesterPayMainContent extends StatefulWidget {
 class _YesterPayMainContentState extends State<YesterPayMainContent> {
   final PageController _pageController = PageController();
   int _currentPage = 2;
-  String requiredBingoCount = '로딩 중...';
-  String bingoCount = '로딩 중...';
-  String crosswordCompletionRate = '0%';
+  String requiredBingoCount = '1';
+  String bingoCount = '0';
+  String crosswordCompletionRate = '83%';
   List<String> letters = [];
   int? teamId;
 
