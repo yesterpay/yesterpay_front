@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:practice_first_flutter_project/widgets/decomopseLetter.dart';
@@ -55,7 +54,6 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     });
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -85,10 +83,44 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     }
   }
 
+  Future<void> saveCombinationToDB(List<String> existingLetters, List<String> newLetters) async {
+    // 요청 데이터를 구성합니다.
+    final Map<String, dynamic> data = {
+      'existingLetterList': existingLetters.isNotEmpty ? existingLetters : null,
+      'newLetterList': newLetters
+    };
+
+    try {
+      // POST 요청을 보냅니다.
+      final response = await http.post(
+        Uri.parse('http://3.34.102.55:8080/member/1/letter/new'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
+
+      // 성공 여부에 따른 처리
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("조합이 성공적으로 저장되었습니다.")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("저장에 실패했습니다. 다시 시도해주세요.")),
+        );
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e) {
+      // 예외 처리
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("저장 중 오류가 발생했습니다.")),
+      );
+      print('Exception: $e');
+    }
+  }
+
 
   void _moveCharacterToBox(String character) {
     setState(() {
-      // Only allow moving characters if a box is selected
       if (!isLeftBoxSelected && !isRightBoxSelected) return;
 
       decomposedCharacters.remove(character);
@@ -163,11 +195,17 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
           finalConsonant: rightFinalConsonant,
         ).combineKoreanLetters(rightConsonant ?? "", rightVowel ?? "", rightFinalConsonant);
 
-        // 결합된 결과를 보유 글자에 반영
+        // 기존 글자와 새 글자 반영
         int firstIndex = retainedLetters.indexOf(selectedLetters[0]);
         int secondIndex = retainedLetters.indexOf(selectedLetters[1]);
         if (firstIndex != -1) retainedLetters[firstIndex] = leftCombined;
         if (secondIndex != -1) retainedLetters[secondIndex] = rightCombined;
+
+        // DB에 저장 호출
+        saveCombinationToDB(
+            [selectedLetters[0], selectedLetters[1]], // 기존 글자 리스트
+            [leftCombined, rightCombined] // 새 글자 리스트
+        );
 
         // 상태 초기화
         selectedLetters = [];
@@ -191,6 +229,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
 
 
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,7 +237,9 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
         title: Text("단어 조합하기"),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.of(context).pop(true); // true를 반환하며 창을 닫음
+          },
         ),
       ),
       body: SingleChildScrollView(
