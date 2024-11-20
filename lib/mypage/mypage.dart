@@ -478,10 +478,9 @@ class _MyPageState extends State<MyPage> {
           SizedBox(height: 16),
           GestureDetector(
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => BingoMain()), // bingo_main.dart로 이동
+                MaterialPageRoute(builder: (context) => BingoMain()),
               );
             },
             child: Row(
