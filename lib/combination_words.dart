@@ -24,15 +24,15 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   bool isLeftBoxSelected = false;
   bool isRightBoxSelected = false;
 
-  void _copyLinkAndIncreaseCount() {
-    Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
-    setState(() {
-      combinePermissions++;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("링크가 복사되었습니다")),
-    );
-  }
+  // void _copyLinkAndIncreaseCount() {
+  //   Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
+  //   setState(() {
+  //     combinePermissions++;
+  //   });
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text("링크가 복사되었습니다")),
+  //   );
+  // }
 
   void _selectLetter(String letter) {
     setState(() {
@@ -58,7 +58,85 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   void initState() {
     super.initState();
     fetchRetainedLetters();
+    fetchCombinePermissions(); // 조합권 가져오기
   }
+
+  Future<void> fetchCombinePermissions() async {
+    try {
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+
+        setState(() {
+          combinePermissions = int.tryParse(data['combiCount']?.toString() ?? '2') ?? 2;
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          combinePermissions = 1; // 기본값 설정
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        combinePermissions = 1; // 기본값 설정
+      });
+    }
+  }
+
+  Future<void> _copyLinkAndIncreaseCount() async {
+    // 클립보드에 공유 링크 복사
+    Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
+
+    // 요청에 사용할 데이터
+    final Map<String, dynamic> requestData = {
+      "memberId": 1, // 실제 사용자의 memberId로 변경
+      "kakaoHashId": "unique-kakao-hash-id" // 카카오 해시 ID (친구 식별)
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://3.34.102.55:8080/combi/increase'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data.containsKey('combiCount')) {
+          setState(() {
+            combinePermissions = data['combiCount']; // 조합권 업데이트
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("조합권이 증가되었습니다. 현재 조합권: $combinePermissions")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("조합권 증가에 실패했습니다.")),
+          );
+        }
+      } else if (response.statusCode == 400) {
+        final data = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['msg'] ?? "이미 공유한 친구입니다.")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("서버 오류: 조합권 증가 실패")),
+        );
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("네트워크 오류: 조합권 증가 실패")),
+      );
+      print('Exception: $e');
+    }
+  }
+
 
   Future<void> fetchRetainedLetters() async {
     try {
@@ -284,7 +362,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
                               ),
                               SizedBox(width: 5),
                               ElevatedButton(
-                                onPressed: _copyLinkAndIncreaseCount,
+                                onPressed: _copyLinkAndIncreaseCount, // 수정된 메서드 호출
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,
                                   backgroundColor: Colors.white,
@@ -292,6 +370,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
                                 ),
                                 child: Text("공유하고 조합권 받기", style: TextStyle(fontSize: 12)),
                               ),
+
                             ],
                           ),
                         ],
