@@ -28,16 +28,6 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   bool isLeftBoxSelected = false;
   bool isRightBoxSelected = false;
 
-  // void _copyLinkAndIncreaseCount() {
-  //   Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
-  //   setState(() {
-  //     combinePermissions++;
-  //   });
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(content: Text("링크가 복사되었습니다")),
-  //   );
-  // }
-
   void _selectLetter(String letter) {
     setState(() {
       if (selectedLetters.contains(letter)) {
@@ -62,7 +52,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   void initState() {
     super.initState();
     fetchRetainedLetters();
-    fetchCombinePermissions(); // 조합권 가져오기
+    fetchCombinePermissions();
   }
 
   Future<void> fetchCombinePermissions() async {
@@ -97,8 +87,8 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     // 요청에 사용할 데이터
 
     final Map<String, dynamic> requestData = {
-      "memberId": 1, // 실제 사용자의 memberId로 변경
-      "kakaoHashId": "unique-kakao-hash-id" // 카카오 해시 ID (친구 식별)
+      "memberId": 1,
+      "kakaoHashId": "unique-kakao-hash-id"
     };
 
     try {
@@ -113,7 +103,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
 
         if (data.containsKey('combiCount')) {
           setState(() {
-            combinePermissions = data['combiCount']; // 조합권 업데이트
+            combinePermissions = data['combiCount'];
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -170,21 +160,18 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
 
   Future<void> saveCombinationToDB(List<String> existingLetters, List<String> newLetters) async {
     final memberId = Get.find<GlobalProvider>().getMemberId();
-    // 요청 데이터를 구성합니다.
     final Map<String, dynamic> data = {
       'existingLetterList': existingLetters.isNotEmpty ? existingLetters : null,
       'newLetterList': newLetters
     };
 
     try {
-      // POST 요청을 보냅니다.
       final response = await http.post(
         Uri.parse('http://3.34.102.55:8080/member/$memberId/letter/new'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(data),
       );
 
-      // 성공 여부에 따른 처리
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("조합이 성공적으로 저장되었습니다.")),
@@ -196,7 +183,6 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
         print('Error: ${response.statusCode}, Body: ${response.body}');
       }
     } catch (e) {
-      // 예외 처리
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("저장 중 오류가 발생했습니다.")),
       );
@@ -341,7 +327,6 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   void _applyCombination() {
     setState(() {
       if (selectedLetters.length == 2) {
-        // 결합된 한글 생성
         String leftCombined = CombineLetter(
           consonant: leftConsonant ?? "",
           vowel: leftVowel ?? "",
@@ -354,19 +339,16 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
           finalConsonant: rightFinalConsonant,
         ).combineKoreanLetters(rightConsonant ?? "", rightVowel ?? "", rightFinalConsonant);
 
-        // 기존 글자와 새 글자 반영
         int firstIndex = retainedLetters.indexOf(selectedLetters[0]);
         int secondIndex = retainedLetters.indexOf(selectedLetters[1]);
         if (firstIndex != -1) retainedLetters[firstIndex] = leftCombined;
         if (secondIndex != -1) retainedLetters[secondIndex] = rightCombined;
 
-        // DB에 저장 호출
         saveCombinationToDB(
-            [selectedLetters[0], selectedLetters[1]], // 기존 글자 리스트
-            [leftCombined, rightCombined] // 새 글자 리스트
+            [selectedLetters[0], selectedLetters[1]],
+            [leftCombined, rightCombined]
         );
 
-        // 상태 초기화
         selectedLetters = [];
         decomposedCharacters = [];
         leftConsonant = null;
@@ -378,7 +360,6 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
         isLeftBoxSelected = false;
         isRightBoxSelected = false;
 
-        // 조합권 차감
         if (combinePermissions > 0) {
           combinePermissions--;
         }
@@ -397,7 +378,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop(true); // true를 반환하며 창을 닫음
+            Navigator.of(context).pop(true);
           },
         ),
       ),
@@ -443,7 +424,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
                               ),
                               SizedBox(width: 5),
                               ElevatedButton(
-                                onPressed: _copyLinkAndIncreaseCount, // 수정된 메서드 호출
+                                onPressed: _copyLinkAndIncreaseCount,
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,
                                   backgroundColor: Colors.white,
@@ -589,21 +570,99 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
                                 context: context,
                                 builder: (BuildContext context) {
                                   return AlertDialog(
-                                    title: Text("조합권이 없습니다."),
-                                    content: Text("친구에게 공유하고 조합권을 얻겠습니까?"),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                    backgroundColor: Colors.white,
+                                    titlePadding: EdgeInsets.only(top: 24.0),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                                    actionsPadding: EdgeInsets.only(bottom: 16.0),
+                                    title: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.orange,
+                                          size: 40,
+                                        ),
+                                        SizedBox(height: 16),
+                                        Text(
+                                          "조합권이 없습니다.",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "친구에게 공유하고 조합권을 얻겠습니까?",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.grey[700],
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: 16),
+                                      ],
+                                    ),
                                     actions: [
-                                      TextButton(
-                                        child: Text("아니오"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: Text("예"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                          _copyLinkAndIncreaseCount();
-                                        },
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          SizedBox(
+                                            width: 100,
+                                            child: TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              style: TextButton.styleFrom(
+                                                padding: EdgeInsets.symmetric(vertical: 12.0),
+                                                backgroundColor: Colors.grey[300],
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                "아니오",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 100,
+                                            child: TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                _copyLinkAndIncreaseCount();
+                                              },
+                                              style: TextButton.styleFrom(
+                                                padding: EdgeInsets.symmetric(vertical: 12.0),
+                                                backgroundColor: Color(0xFFFAB809),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                "예",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   );
