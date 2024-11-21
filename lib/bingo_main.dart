@@ -151,7 +151,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
   }
 
   Future<void> _fetchBingoBoard() async {
-    const String serverUrl = 'http://10.0.2.2:8081/bingo/board';
+    const String serverUrl = 'http://3.34.102.55:8080/bingo/board';
     final url =
         Uri.parse('$serverUrl?memberId=$memberId'); // memberId를 적절히 설정하세요.
 
@@ -207,7 +207,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
   }
 
   Future<void> _fetchMission() async {
-    const String serverUrl = 'http://10.0.2.2:8081/bingo/mission';
+    const String serverUrl = 'http://3.34.102.55:8080/bingo/mission';
     final url = Uri.parse('$serverUrl?memberId=$memberId'); // memberId 설정
 
     try {
@@ -228,7 +228,7 @@ class _BingoMainState extends State<BingoMain> with TickerProviderStateMixin {
   }
 
   Future<void> _missionExecution(int index) async {
-    const String serverUrl = 'http://10.0.2.2:8081/bingo/mission/success';
+    const String serverUrl = 'http://3.34.102.55:8080/bingo/mission/success';
     final url = Uri.parse(serverUrl);
 
     final Map<String, dynamic> data = {
