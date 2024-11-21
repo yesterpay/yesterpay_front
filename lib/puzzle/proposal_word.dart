@@ -56,7 +56,7 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
 
   List<String> myLetters = [];
   String? selectedLetter;
-  List<String> letters = [];
+  // List<String> letters = [];
   late int memberId;
   late int teamId;
 
@@ -129,19 +129,20 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody) as List;
+        print('단어 받아오나요? $data');
         setState(() {
-          letters = data.map((item) => item.toString()).toList();
+          myLetters = data.map((item) => item.toString()).toList();
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
         setState(() {
-          letters = [];
+          myLetters = [];
         });
       }
     } catch (e) {
       print('Exception: $e');
       setState(() {
-        letters = [];
+        myLetters = [];
       });
     }
   }
@@ -472,7 +473,7 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            ElevatedButton(
+                            TextButton(
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -481,7 +482,7 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
                                         CombinationWordsPage(),
                                   ),
                                 ).then((value) {
-                                  if (value == true) {
+                                  if (value) {
                                     fetchLetters();
                                   }
                                 });
