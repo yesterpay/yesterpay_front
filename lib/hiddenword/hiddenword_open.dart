@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '/main.dart';
 
 class HiddenWordOpenPage extends StatefulWidget {
   @override
@@ -20,9 +23,10 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
   }
 
   Future<void> fetchOwnedLetters() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.get(
-        Uri.parse('http://3.34.102.55:8080/member/1/letter'),
+        Uri.parse('http://3.34.102.55:8080/member/$memberId/letter'),
       );
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
@@ -46,10 +50,11 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
   }
 
   Future<void> showHiddenWordPopup() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.get(
         Uri.parse(
-            'http://3.34.102.55:8080/member/1/payment/is-include-hidden-letter?date=2024-11-20'),
+            'http://3.34.102.55:8080/member/$memberId/payment/is-include-hidden-letter?date=2024-11-20'),
       );
 
       if (response.statusCode == 200) {
@@ -240,9 +245,10 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
   }
 
   Future<void> replaceLetter(String existingLetter, String newLetter) async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.post(
-        Uri.parse('http://3.34.102.55:8080/member/1/letter/new'),
+        Uri.parse('http://3.34.102.55:8080/member/$memberId/letter/new'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'existingLetterList': [existingLetter],

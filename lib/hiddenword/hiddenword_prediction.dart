@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import '../main.dart';
 
 class HiddenWordPredictionPage extends StatefulWidget {
   @override
@@ -28,9 +32,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
   }
 
   Future<void> fetchOwnedLetters() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.get(
-        Uri.parse('http://3.34.102.55:8080/member/1/letter'),
+        Uri.parse('http://3.34.102.55:8080/member/$memberId/letter'),
       );
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
@@ -72,9 +77,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
   }
 
   Future<void> fetchSuccessCount() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.get(Uri.parse(
-          'http://3.34.102.55:8080/predict/success-count/this-week?memberId=1'));
+          'http://3.34.102.55:8080/predict/success-count/this-week?memberId=$memberId'));
 
       if (response.statusCode == 200) {
         final decodedResponse = utf8.decode(response.bodyBytes);
@@ -94,12 +100,13 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
   }
 
   Future<void> fetchParticipationResults() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     setState(() {
       isLoadingResults = true;
     });
     try {
       final response = await http.get(Uri.parse(
-          'http://3.34.102.55:8080/predict/history/this-week?memberId=1'));
+          'http://3.34.102.55:8080/predict/history/this-week?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedResponse = utf8.decode(response.bodyBytes);
         final List<dynamic> resultList = json.decode(decodedResponse);
@@ -124,9 +131,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
   }
 
   Future<void> fetchHiddenLetter(String date) async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.get(
-        Uri.parse('http://3.34.102.55:8080/predict/history/this-week?memberId=1'),
+        Uri.parse('http://3.34.102.55:8080/predict/history/this-week?$memberId'),
       );
 
       if (response.statusCode == 200) {
@@ -252,9 +260,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
 
 
   Future<void> replaceLetter(String existingLetter, String newLetter) async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.post(
-        Uri.parse('http://3.34.102.55:8080/member/1/letter/new'),
+        Uri.parse('http://3.34.102.55:8080/member/$memberId/letter/new'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'existingLetterList': [existingLetter],
@@ -361,12 +370,13 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
   }
 
   Future<void> sendSelectedWord(String word) async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
       final response = await http.post(
         Uri.parse('http://3.34.102.55:8080/predict/choose'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'memberId': 1,
+          'memberId': memberId,
           'letter': word,
         }),
       );
