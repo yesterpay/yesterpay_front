@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:practice_first_flutter_project/widgets/decomopseLetter.dart';
 import 'package:practice_first_flutter_project/widgets/combineLetter.dart';
 import 'package:http/http.dart' as http;
+
+import 'main.dart';
 
 class CombinationWordsPage extends StatefulWidget {
   @override
@@ -62,8 +66,9 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   }
 
   Future<void> fetchCombinePermissions() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
-      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -90,6 +95,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     Clipboard.setData(ClipboardData(text: "http://yesterpay.com/share"));
 
     // 요청에 사용할 데이터
+
     final Map<String, dynamic> requestData = {
       "memberId": 1, // 실제 사용자의 memberId로 변경
       "kakaoHashId": "unique-kakao-hash-id" // 카카오 해시 ID (친구 식별)
@@ -139,8 +145,9 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
 
 
   Future<void> fetchRetainedLetters() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
-      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
+      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/$memberId/letter'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody) as List;
@@ -162,6 +169,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   }
 
   Future<void> saveCombinationToDB(List<String> existingLetters, List<String> newLetters) async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     // 요청 데이터를 구성합니다.
     final Map<String, dynamic> data = {
       'existingLetterList': existingLetters.isNotEmpty ? existingLetters : null,
@@ -171,7 +179,7 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
     try {
       // POST 요청을 보냅니다.
       final response = await http.post(
-        Uri.parse('http://3.34.102.55:8080/member/1/letter/new'),
+        Uri.parse('http://3.34.102.55:8080/member/$memberId/letter/new'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(data),
       );
