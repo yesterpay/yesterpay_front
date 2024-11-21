@@ -59,10 +59,9 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   int _currentPage = 2;
   String requiredBingoCount = '1';
   String bingoCount = '0';
-  String crosswordCompletionRate = '83%';
+  String crosswordCompletionRate = '0%';
   List<String> letters = [];
   int? teamId;
-
 
   @override
   void initState() {
@@ -90,8 +89,10 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   }
 
   Future<void> fetchLetters() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
-      final response = await http.get(Uri.parse('http://3.34.102.55:8080/member/1/letter'));
+      final response = await http
+          .get(Uri.parse('http://3.34.102.55:8080/member/$memberId/letter'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody) as List;
@@ -113,15 +114,16 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   }
 
   Future<void> fetchRequiredBingoCount() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
     try {
-      final response = await http.get(Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
+      final response = await http.get(
+          Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
         setState(() {
           requiredBingoCount = data['requiredBingoCount']?.toString() ?? '0';
           bingoCount = data['bingoCount']?.toString() ?? '0';
-
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
@@ -142,7 +144,8 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
   Future<void> fetchTeamIdAndCompletionRate() async {
     try {
       final memberId = Get.find<GlobalProvider>().getMemberId();
-      final teamIdResponse = await http.get(Uri.parse('http://3.34.102.55:8080/member/$memberId'));
+      final teamIdResponse =
+          await http.get(Uri.parse('http://3.34.102.55:8080/member/$memberId'));
       if (teamIdResponse.statusCode == 200) {
         final decodedBody = utf8.decode(teamIdResponse.bodyBytes);
         final data = json.decode(decodedBody);
@@ -151,8 +154,8 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
         });
 
         if (teamId != null) {
-          final rateResponse =
-          await http.get(Uri.parse('http://3.34.102.55:8080/puzzle/rate/$teamId'));
+          final rateResponse = await http
+              .get(Uri.parse('http://3.34.102.55:8080/puzzle/rate/$teamId'));
           if (rateResponse.statusCode == 200) {
             final decodedRate = utf8.decode(rateResponse.bodyBytes);
             final rateData = json.decode(decodedRate);
@@ -393,18 +396,18 @@ class _YesterPayMainContentState extends State<YesterPayMainContent> {
                       children: letters.isEmpty
                           ? [const Text('보유한 단어가 없습니다.')]
                           : letters.map((word) {
-                        return Container(
-                          padding: const EdgeInsets.all(14.0),
-                          decoration: BoxDecoration(
-                            color: Colors.orange[100],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            word,
-                            style: const TextStyle(fontSize: 22),
-                          ),
-                        );
-                      }).toList(),
+                              return Container(
+                                padding: const EdgeInsets.all(14.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[100],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  word,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              );
+                            }).toList(),
                     ),
                   ],
                 ),
