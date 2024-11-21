@@ -241,27 +241,100 @@ class _CombinationWordsPageState extends State<CombinationWordsPage> {
   void _showConfirmationDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("남은 자모음은 버려집니다."),
-          content: Text("조합을 반영할까요?"),
-          actions: [
-            TextButton(
-              child: Text("아니오"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        backgroundColor: Colors.white,
+        title: Column(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.orange,
+              size: 40,
             ),
-            TextButton(
-              child: Text("예"),
-              onPressed: () {
-                _applyCombination();
-                Navigator.of(context).pop();
-              },
+            SizedBox(height: 16),
+            Text(
+              "남은 자모음은 버려집니다.",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
-        );
-      },
+        ),
+        content: Text(
+          "조합을 반영할까요?",
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[700],
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsPadding: EdgeInsets.only(bottom: 12.0),
+        actions: [
+          Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        "아니오",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  SizedBox(
+                    width: 100,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _applyCombination();
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        "예",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
