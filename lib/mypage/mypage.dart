@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:practice_first_flutter_project/main.dart';
 import 'package:practice_first_flutter_project/widgets/app_above_bar.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
 import 'package:practice_first_flutter_project/bingo_main.dart';
@@ -10,6 +11,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class MyPage extends StatefulWidget {
+  const MyPage({super.key});
+
   @override
   _MyPageState createState() => _MyPageState();
 }
@@ -26,10 +29,13 @@ class _MyPageState extends State<MyPage> {
   List<String> letters = [];
   List<String> remainingLetters = [];
   List<String> missions = [];
+  late int memberId;
 
   @override
   void initState() {
     super.initState();
+    final GlobalProvider pro = Get.find<GlobalProvider>();
+    memberId = pro.getMemberId();
     if (!Get.isRegistered<NotificationController>()) {
       Get.put(NotificationController());
     }
@@ -45,7 +51,7 @@ class _MyPageState extends State<MyPage> {
   Future<void> fetchRemainingLetters() async {
     try {
       final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=1'));
+          Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -55,8 +61,8 @@ class _MyPageState extends State<MyPage> {
 
         setState(() {
           remainingLetters = bingoLetterList
-              .where((item) =>
-          item['letter'] != 'M' && item['isCheck'] == false)
+              .where(
+                  (item) => item['letter'] != 'M' && item['isCheck'] == false)
               .map<String>((item) => item['letter'].toString())
               .toList();
         });
@@ -76,8 +82,8 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchMissions() async {
     try {
-      final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/bingo/mission?memberId=1'));
+      final response = await http.get(Uri.parse(
+          'http://3.34.102.55:8080/bingo/mission?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -104,8 +110,8 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchMemberData() async {
     try {
-      final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/member/1'));
+      final response =
+          await http.get(Uri.parse('http://3.34.102.55:8080/member/$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -117,9 +123,9 @@ class _MyPageState extends State<MyPage> {
           combiCount = data['combiCount']?.toString() ?? '0';
           title = data['title']?.toString() ?? '0';
           profileImageUrl =
-          data['imgUrl'] != null && data['imgUrl'].startsWith('http')
-              ? data['imgUrl']
-              : 'http://3.34.102.55:8080' + data['imgUrl'];
+              data['imgUrl'] != null && data['imgUrl'].startsWith('http')
+                  ? data['imgUrl']
+                  : 'http://3.34.102.55:8080' + data['imgUrl'];
         });
       } else {
         print('Error: ${response.statusCode}, Body: ${response.body}');
@@ -143,8 +149,8 @@ class _MyPageState extends State<MyPage> {
 
   Future<void> fetchLetters() async {
     try {
-      final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/member/1/letter'));
+      final response = await http
+          .get(Uri.parse('http://3.34.102.55:8080/member/$memberId/letter'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody) as List;
@@ -170,7 +176,7 @@ class _MyPageState extends State<MyPage> {
   Future<void> fetchBingoLevel() async {
     try {
       final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=1'));
+          Uri.parse('http://3.34.102.55:8080/bingo/board?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -196,7 +202,7 @@ class _MyPageState extends State<MyPage> {
   Future<void> fetchRequiredBingoCount() async {
     try {
       final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
+          Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -221,7 +227,7 @@ class _MyPageState extends State<MyPage> {
   Future<void> fetchBingoCount() async {
     try {
       final response = await http.get(
-          Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=1'));
+          Uri.parse('http://3.34.102.55:8080/bingo/status?memberId=$memberId'));
       if (response.statusCode == 200) {
         final decodedBody = utf8.decode(response.bodyBytes);
         final data = json.decode(decodedBody);
@@ -244,12 +250,10 @@ class _MyPageState extends State<MyPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-      ),
+      appBar: CustomAppBar(),
       backgroundColor: Color(0xFFF8F6F2),
       body: SingleChildScrollView(
         child: Padding(
@@ -259,11 +263,11 @@ class _MyPageState extends State<MyPage> {
               ClipOval(
                 child: profileImageUrl.isNotEmpty
                     ? Image.network(
-                  profileImageUrl,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                )
+                        profileImageUrl,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
                     : SizedBox.shrink(),
               ),
               SizedBox(height: 15),
@@ -284,8 +288,9 @@ class _MyPageState extends State<MyPage> {
                   SizedBox(width: 10),
                   Expanded(child: _buildStatBox(bingoLevel, '빙고 level')),
                   SizedBox(width: 10),
-                  Expanded(child: _buildStatBoxWithImage(
-                      'assets/images/newbie.png', title)),
+                  Expanded(
+                      child: _buildStatBoxWithImage(
+                          'assets/images/newbie.png', title)),
                 ],
               ),
               SizedBox(height: 20),
@@ -366,7 +371,8 @@ class _MyPageState extends State<MyPage> {
                 radius: 20,
                 child: Text(
                   word,
-                  style: TextStyle(color: Colors.white,
+                  style: TextStyle(
+                      color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold),
                 ),
@@ -386,8 +392,8 @@ class _MyPageState extends State<MyPage> {
         children: [
           ListTile(
             tileColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             title: Text.rich(
               TextSpan(
                 children: [
@@ -431,8 +437,8 @@ class _MyPageState extends State<MyPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Image.asset(
-                'assets/images/Paygo_Bingo.png', width: 300, height: 100),
+            child: Image.asset('assets/images/Paygo_Bingo.png',
+                width: 300, height: 100),
           ),
           Align(
             alignment: Alignment.centerRight,
@@ -453,11 +459,13 @@ class _MyPageState extends State<MyPage> {
                 width: 40,
                 height: 40,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: Color(0xFFFFF2CC),
+                decoration: BoxDecoration(
+                    color: Color(0xFFFFF2CC),
                     borderRadius: BorderRadius.circular(10)),
                 child: Text(
                   letter,
-                  style: TextStyle(fontSize: 16,
+                  style: TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF6B5E00)),
                 ),
@@ -471,8 +479,10 @@ class _MyPageState extends State<MyPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: missions.isNotEmpty
-                ? missions.map((mission) =>
-                Text('• $mission', style: TextStyle(fontSize: 14))).toList()
+                ? missions
+                    .map((mission) =>
+                        Text('• $mission', style: TextStyle(fontSize: 14)))
+                    .toList()
                 : [Text('참여 가능한 미션이 없습니다.', style: TextStyle(fontSize: 14))],
           ),
           SizedBox(height: 16),
@@ -485,7 +495,7 @@ class _MyPageState extends State<MyPage> {
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [
+              children: const [
                 Text(
                   '빙고 완성하러 가기',
                   style: TextStyle(
