@@ -98,7 +98,6 @@ class _CrosswordPageState extends State<CrosswordPage> {
     });
   }
 
-
   Future<void> _fetchMemberInfo() async {
     const String serverUrl = 'http://3.34.102.55:8080/member'; // API 주소
     final url = Uri.parse('$serverUrl/$memberId');
@@ -271,7 +270,8 @@ class _CrosswordPageState extends State<CrosswordPage> {
   }
 
   Future<void> _submitSuggestedWord(CrosswordWord wordData, String word) async {
-    const String serverUrl = 'http://3.34.102.55:8080/puzzle/board/word'; // 서버 주소
+    const String serverUrl =
+        'http://3.34.102.55:8080/puzzle/board/word'; // 서버 주소
     final url = Uri.parse(serverUrl);
 
     final Map<String, dynamic> data = {
@@ -492,7 +492,14 @@ class _CrosswordPageState extends State<CrosswordPage> {
                         MaterialPageRoute(
                           builder: (context) => SuggestedWordPage(),
                         ),
-                      );
+                      ).then((value) {
+                        if (value) {
+                          _fetchMemberInfo().then((_) {
+                            _fetchPuzzleWords(
+                                teamId); // teamId를 사용하여 단어 목록을 받아옵니다
+                          });
+                        }
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cancelBtnColor,

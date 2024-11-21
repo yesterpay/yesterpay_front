@@ -360,12 +360,14 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('제안 단어'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {},
+        //actions: [
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pop(true); // true를 반환하며 창을 닫음
+            },
           ),
-        ],
+        //],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -536,9 +538,6 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: 1,
       ),
     );
   }
