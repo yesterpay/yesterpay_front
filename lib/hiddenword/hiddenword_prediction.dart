@@ -149,8 +149,7 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
         if (selectedResult != null && selectedResult.containsKey('hiddenLetter')) {
           final hiddenLetter = selectedResult['hiddenLetter'];
 
-          // 히든 글자를 보유 목록에 추가
-          addHiddenWordToOwnedLetters(hiddenLetter); // << 추가 처리
+          addHiddenWordToOwnedLetters(hiddenLetter);
 
           showDialog(
             context: context,
@@ -248,7 +247,6 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
           ownedLetters.add(letter);
           print("글자 추가됨: $ownedLetters");
         } else {
-          // 보유 글자가 6개일 경우 교체 다이얼로그 호출
           print("교체 팝업 호출");
           showReplaceDialog(letter);
         }
@@ -385,14 +383,60 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text("히든글자 예측 완료"),
-            content: Text("히든글자는 내일 9시에 공개됩니다!"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text("확인"),
-              ),
-            ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            backgroundColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 40,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "예측 완료",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "내일 오전 9시에 공개됩니다!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFFAB809),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: Text(
+                    "확인",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       } else {
@@ -510,9 +554,9 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black26, // 그림자 색상
-                                            offset: Offset(0, 2), // 그림자의 위치
-                                            blurRadius: 4, // 그림자의 흐림 정도
+                                            color: Colors.black26,
+                                            offset: Offset(0, 2),
+                                            blurRadius: 4,
                                           ),
                                         ],
                                       ),
@@ -566,10 +610,10 @@ class _HiddenWordPredictionPageState extends State<HiddenWordPredictionPage> {
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       fontWeight: FontWeight.bold,
-                                                      color: Colors.green[800], // 히든 글자 색상
+                                                      color: Colors.green[800],
                                                     ),
                                                   ),
-                                                  SizedBox(width: 12), // 히든 글자와 예측 글자 사이 간격 최소화
+                                                  SizedBox(width: 12),
                                                   Text(
                                                     "예측 글자: ",
                                                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
