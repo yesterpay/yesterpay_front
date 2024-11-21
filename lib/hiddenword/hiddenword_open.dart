@@ -49,7 +49,7 @@ class _HiddenWordOpenPageState extends State<HiddenWordOpenPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://3.34.102.55:8080/member/1/payment/is-include-hidden-letter?date=2024-11-19'),
+            'http://3.34.102.55:8080/member/1/payment/is-include-hidden-letter?date=2024-11-20'),
       );
 
       if (response.statusCode == 200) {
