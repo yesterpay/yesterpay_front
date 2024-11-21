@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:practice_first_flutter_project/main.dart';
 import 'package:practice_first_flutter_project/widgets/bottom_navigation_bar.dart';
+import 'package:practice_first_flutter_project/combination_words.dart';
 
 class ProposalWord {
   final int proposalWordId;
@@ -55,6 +56,7 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
 
   List<String> myLetters = [];
   String? selectedLetter;
+  List<String> letters = [];
   late int memberId;
   late int teamId;
 
@@ -116,6 +118,31 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('제안단어 제출 중 오류 발생')),
       );
+    }
+  }
+
+  Future<void> fetchLetters() async {
+    final memberId = Get.find<GlobalProvider>().getMemberId();
+    try {
+      final response = await http
+          .get(Uri.parse('http://3.34.102.55:8080/member/$memberId/letter'));
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody) as List;
+        setState(() {
+          letters = data.map((item) => item.toString()).toList();
+        });
+      } else {
+        print('Error: ${response.statusCode}, Body: ${response.body}');
+        setState(() {
+          letters = [];
+        });
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() {
+        letters = [];
+      });
     }
   }
 
@@ -215,30 +242,10 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
                           child: ElevatedButton(
                             onPressed: () {
                               if (selectedLetter != null) {
-                                // print('제출단어 인스턴스 $wordData');
-                                // print(suggestedWords
-                                //     .map(
-                                //         (word) => word.word == wordData['word'])
-                                //     .firstOrNull);
                                 _submitSuggestedWord(
                                     proposalWord, selectedLetter!);
                                 String? submitLetter;
                                 submitLetter = selectedLetter;
-                                // setState(() {
-                                //   myLetters = List.from(myLetters)
-                                //     ..remove(selectedLetter);
-
-                                //   proposalWord.providedLetters =
-                                //       List<String>.from(
-                                //           proposalWord.providedLetters)
-                                //         ..add(selectedLetter!);
-
-                                //   proposalWord['neededLetters'] = List<String>.from(
-                                //       proposalWord['neededLetters'])
-                                //     ..remove(selectedLetter);
-                                //   submitLetter = selectedLetter;
-                                //   selectedLetter = null; // 선택된 글자 초기화
-                                // });
                                 Navigator.of(context).pop(); // 모달 닫기
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -455,12 +462,46 @@ class _SuggestedWordPageState extends State<SuggestedWordPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '내 단어',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '내 단어',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        CombinationWordsPage(),
+                                  ),
+                                ).then((value) {
+                                  if (value == true) {
+                                    fetchLetters();
+                                  }
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: cancelBtnColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.all(4),
+                              ),
+                              child: Text(
+                                '조합',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: 8),
                         Container(
